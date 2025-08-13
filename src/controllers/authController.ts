@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from "express";
-import { AuthService } from "@/services/AuthService";
 import { AppError } from "@/utils/errors/AppError";
 import { ErrorCodes } from "@/utils/errors/errorCodes";
 import { logger } from "@/utils/logger";
+import { AuthService } from "@/services/authService";
 
 export class AuthController {
   private authService: AuthService;

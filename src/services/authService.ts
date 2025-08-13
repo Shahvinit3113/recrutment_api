@@ -4,23 +4,13 @@ import { UserRepository } from "@/database/repositories/userRepository";
 import { AppError } from "@/utils/errors/AppError";
 import { ErrorCodes } from "@/utils/errors/errorCodes";
 import { config } from "@/config/environment";
-import { User, UserType } from "@/types/user";
 import { logger } from "@/utils/logger";
+import { Role } from "@/enums/role";
+import { User } from "@/entities/user";
 
 interface LoginCredentials {
-  email: string;
-  password: string;
-}
-
-interface RegisterData {
-  email: string;
-  password: string;
-  user_type: UserType;
-  first_name: string;
-  last_name: string;
-  phone?: string;
-  date_of_birth?: string;
-  gender?: "male" | "female" | "other";
+  Email: string;
+  Password: string;
 }
 
 interface AuthTokens {
@@ -30,9 +20,9 @@ interface AuthTokens {
 }
 
 interface TokenPayload {
-  userId: number;
-  email: string;
-  userType: UserType;
+  UserId: string;
+  Email: string;
+  Role: Role;
   iat?: number;
   exp?: number;
 }
@@ -44,7 +34,7 @@ export class AuthService {
     this.userRepository = new UserRepository();
   }
 
-  async register(registerData: RegisterData): Promise<AuthTokens> {
+  async register(registerData: any): Promise<AuthTokens> {
     try {
       // Validate email format
       if (!this.isValidEmail(registerData.email)) {
@@ -101,7 +91,7 @@ export class AuthService {
     try {
       // Find user with password
       const user = await this.userRepository.findByEmailWithPassword(
-        credentials.email
+        credentials.Email
       );
       if (!user) {
         throw new AppError(
@@ -113,7 +103,7 @@ export class AuthService {
 
       // Verify password
       const isPasswordValid = await bcrypt.compare(
-        credentials.password,
+        credentials.Password,
         user.password_hash
       );
       if (!isPasswordValid) {
@@ -156,7 +146,7 @@ export class AuthService {
       ) as TokenPayload;
 
       // Find user
-      const user = await this.userRepository.findById(payload.userId);
+      const user = await this.userRepository.findById(payload.UserId);
       if (!user || !user.is_active) {
         throw new AppError(
           ErrorCodes.TOKEN_INVALID,
@@ -269,9 +259,9 @@ export class AuthService {
     refreshToken: string;
   } {
     const payload: Omit<TokenPayload, "iat" | "exp"> = {
-      userId: user.id,
-      email: user.email,
-      userType: user.user_type,
+      UserId: user.Uid,
+      Email: user.Email,
+      Role: user.Role,
     };
 
     const accessToken = jwt.sign(payload, config.JWT_SECRET, {
