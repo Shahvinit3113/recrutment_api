@@ -22,16 +22,19 @@
     "noFallthroughCasesInSwitch": true,
     "moduleResolution": "node",
     "baseUrl": "./src",
+    "experimentalDecorators": true,
     "paths": {
       "@/*": ["*"],
-      "@/config/*": ["config/*"],
-      "@/types/*": ["types/*"],
+      "@/config/*": ["/core/config/*"],
       "@/utils/*": ["utils/*"],
       "@/database/*": ["database/*"],
       "@/services/*": ["services/*"],
       "@/controllers/*": ["controllers/*"],
       "@/middleware/*": ["middleware/*"],
-      "@/routes/*": ["routes/*"]
+      "@/routes/*": ["routes/*"],
+      "@/core/*": ["core/*"],
+      "@/repository/*": ["repository/*"],
+      "@/data/*": ["data/*"]
     }
   },
   "include": ["src/**/*"],
