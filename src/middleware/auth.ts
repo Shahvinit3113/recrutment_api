@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { TYPES } from "@/core/container/types";
 import { JWT } from "@/core/helper/JWT";
 import { UnAuthorizedError } from "./errors/unauthorized.error.";
-import { container } from "@/core/container/container";
+import { Container } from "inversify";
 import { CallerService } from "@/service/caller/caller.service";
 
 export const authenticate = async (
@@ -32,7 +32,8 @@ export const authenticate = async (
 
     const user = decodeResult.Payload;
 
-    const _callerService = container.get<CallerService>(TYPES.Caller);
+    const requestContainer: Container = (req as any).container;
+    const _callerService = requestContainer.get<CallerService>(TYPES.Caller);
 
     _callerService.setCaller({
       Role: user?.Role!,

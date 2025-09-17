@@ -1,7 +1,7 @@
 import { IBaseEntities } from "@/data/entities/base-entities";
-import { CallerService } from "@/middleware/caller/CallerService";
 import { Respository } from "@/repository/implementation/repository";
 import { Filter } from "@/data/filters/filter";
+import { CallerService } from "../caller/caller.service";
 
 /**
  * Enhanced service class that works with view models and provides
