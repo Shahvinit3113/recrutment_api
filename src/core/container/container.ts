@@ -2,14 +2,11 @@ import { Container } from "inversify";
 import { TYPES } from "./types";
 import { DatabaseConnection } from "@/db/connection/connection";
 import { UserController } from "@/controllers/implementation/user.controller";
-import { CallerService } from "@/service/caller/caller.service";
 import { GymController } from "@/controllers/implementation/gym.controller";
 import { GymService } from "@/service/implementation/gym.service";
 import { UserService } from "@/service/implementation/user.service";
-import { Respository } from "@/repository/implementation/repository";
-import { User } from "@/data/entities/user";
-import { GymRepository } from "@/repository/gym.repository";
-import { UserRepository } from "@/repository/user.repository";
+import { GymRepository } from "@/repository/implementation/gym.repository";
+import { UserRepository } from "@/repository/implementation/user.repository";
 
 const container = new Container({ defaultScope: "Singleton" });
 
@@ -28,13 +25,6 @@ container
 container
   .bind<UserRepository>(TYPES.UserRepository)
   .to(UserRepository)
-  .inSingletonScope();
-
-container
-  .bind<Respository<User>>(TYPES.Resposity)
-  .toDynamicValue((context) =>
-    context.get<UserRepository>(TYPES.UserRepository)
-  )
   .inSingletonScope();
 
 //#region Services

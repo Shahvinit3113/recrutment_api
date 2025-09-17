@@ -2,7 +2,7 @@ import { inject, injectable } from "inversify";
 import { VmService } from "../vm/vm.service";
 import { TYPES } from "@/core/container/types";
 import { User } from "@/data/entities/user";
-import { UserRepository } from "@/repository/user.repository";
+import { UserRepository } from "@/repository/implementation/user.repository";
 import { Result } from "@/data/response/response";
 import { Filter } from "@/data/filters/filter";
 import { CallerService } from "../caller/caller.service";

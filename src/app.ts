@@ -1,10 +1,10 @@
 import "reflect-metadata";
 import express, { Application } from "express";
 import { registerRoutes } from "@/routes/index";
-import { registerMiddleware } from "@/middleware/registerMiddleware";
-import { notFound } from "@/middleware/notFound";
-import { errorHandler } from "@/middleware/errorHandler";
 import { startServer, wireProcessHandlers } from "@/server/index";
+import { registerMiddleware } from "./middleware/implementation/registerMiddleware";
+import { notFound } from "./middleware/implementation/notFound";
+import { errorHandler } from "./middleware/implementation/errorHandler";
 
 const app: Application = express();
 

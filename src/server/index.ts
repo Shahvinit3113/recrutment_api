@@ -1,6 +1,6 @@
 import { Application } from "express";
 import { config, isTest } from "@/core/config/environment";
-import { logger } from "@/utils/logger";
+import { logger } from "@/core/helper/logger";
 import { container } from "@/core/container/container";
 import { TYPES } from "@/core/container/types";
 import { DatabaseConnection } from "@/db/connection/connection";

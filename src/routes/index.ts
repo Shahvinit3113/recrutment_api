@@ -1,7 +1,7 @@
 import { Application } from "express";
-import healthRouter from "@/routes/health.routes";
-import userRoutes from "@/routes/user.routes";
-import gymRoutes from "@/routes/gym.routes";
+import healthRouter from "@/routes/implementation/health.routes";
+import userRoutes from "@/routes/implementation/user.routes";
+import gymRoutes from "./implementation/gym.routes";
 
 export const registerRoutes = (app: Application): void => {
   app.use("/", healthRouter);
