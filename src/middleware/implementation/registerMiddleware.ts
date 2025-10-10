@@ -6,8 +6,8 @@ import cors from "cors";
 import express from "express";
 import { corsOptions } from "@/core/config/cors";
 import { config } from "@/core/config/environment";
-import { requestLogger } from "@/middleware/requestLogger";
-import { diScope } from "@/middleware/diScope";
+import { requestLogger } from "./requestLogger";
+import { diScope } from "./diScope";
 
 export const registerMiddleware = (app: Application): void => {
   app.use(helmet());

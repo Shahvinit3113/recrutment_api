@@ -5,36 +5,46 @@ import { Role } from "@/data/enums/role";
 @injectable()
 export class CallerService {
   private caller: Caller;
-  constructor() {}
 
   setCaller(caller: Caller) {
-    if (caller == null) {
+    if (caller == null || typeof caller == "undefined") {
       this.setUnknownCaller();
       return;
     }
-    this.caller = caller;
+    this.caller = new Caller({
+      Email: caller.Email,
+      UserId: caller.UserId,
+      Role: caller.Role,
+      TenantId: caller.TenantId,
+    });
   }
 
   setUnknownCaller() {
-    this.caller = new Caller();
-    this.caller.Email = "";
-    this.caller.Role = Role.Unknown;
-    this.caller.UserId = "0000";
+    this.caller = new Caller({
+      Email: "",
+      Role: Role.Unknown,
+      UserId: "0000",
+      TenantId: "0000",
+    });
   }
 
-  get UserId() {
+  get userId() {
     return this.caller.UserId;
   }
 
-  get Role() {
+  get role() {
     return this.caller.Role;
   }
 
-  get Email() {
+  get mail() {
     return this.caller.Email;
   }
 
-  get Caller() {
+  get tenantId() {
+    return this.caller.TenantId;
+  }
+
+  get _caller() {
     return this.caller;
   }
 }

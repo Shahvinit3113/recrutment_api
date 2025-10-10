@@ -1,7 +1,15 @@
 import { IBaseEntities } from "@/data/entities/base-entities";
-import { Respository } from "@/repository/implementation/repository";
 import { Filter } from "@/data/filters/filter";
 import { CallerService } from "../caller/caller.service";
+import { IBaseRepository } from "@/repository/base/base.repository";
+
+export interface IVmService<TVm, T, F, TResult> {
+  getAllAsync(columns?: [keyof T]): Promise<TResult>;
+  getByIdAsync(id: string, columns?: [keyof T]): Promise<TResult>;
+  createAsync(model: TVm): Promise<TResult>;
+  updateAsync(model: TVm, id: string): Promise<TResult>;
+  deleteAsync(id: string): Promise<boolean>;
+}
 
 /**
  * Enhanced service class that works with view models and provides
@@ -12,18 +20,19 @@ import { CallerService } from "../caller/caller.service";
  * @template Filter - Filter criteria type
  * @template TResult - Result type for operations
  */
-export class VmService<
+export abstract class VmService<
   TVm,
   T extends IBaseEntities,
   F extends Filter,
   TResult
-> {
-  private readonly _repository: Respository<T>;
+> implements IVmService<TVm, T, F, TResult>
+{
+  private readonly _repository: IBaseRepository<T>;
   private readonly _callerService: CallerService;
   private readonly entityType: new () => T;
 
   constructor(
-    repositry: Respository<T>,
+    repositry: IBaseRepository<T>,
     callerService: CallerService,
     entityType: new () => T
   ) {
@@ -37,14 +46,21 @@ export class VmService<
    * Get all records
    */
   async getAllAsync(columns?: [keyof T]): Promise<TResult> {
-    return (await this._repository.getAll(columns)) as TResult;
+    return (await this._repository.getAll(
+      [this._callerService.tenantId],
+      columns
+    )) as TResult;
   }
 
   /**
    * Get by ID
    */
   async getByIdAsync(id: string, columns?: [keyof T]): Promise<TResult> {
-    const entity = await this._repository.getById(id, columns);
+    const entity = await this._repository.getById(
+      id,
+      [this._callerService.tenantId],
+      columns
+    );
     if (entity == null) {
       throw new Error(`${this.entityType.name} not found`);
     }
@@ -83,7 +99,7 @@ export class VmService<
     entity.CreatedOn = new Date();
     entity.IsActive = true;
     entity.IsDeleted = false;
-    entity.CreatedBy = this._callerService.UserId;
+    entity.CreatedBy = this._callerService.userId;
   }
 
   /**
@@ -100,7 +116,9 @@ export class VmService<
   async updateAsync(model: TVm, id: string): Promise<TResult> {
     await this.validateUpdate(model);
 
-    let entity = await this._repository.getById(id);
+    let entity = await this._repository.getById(id, [
+      this._callerService.tenantId,
+    ]);
 
     if (entity == null) {
       throw new Error(`${this.entityType.name} not found`);
@@ -125,7 +143,7 @@ export class VmService<
    */
   async preUpdateOperation(model: TVm, entity: T) {
     entity.UpdatedOn = new Date();
-    entity.UpdatedBy = this._callerService.UserId;
+    entity.UpdatedBy = this._callerService.userId;
   }
 
   /**
@@ -139,7 +157,7 @@ export class VmService<
   /**
    * Delete record
    */
-  async deleteAsync(id: string) {
+  async deleteAsync(id: string): Promise<boolean> {
     return await this._repository.softDelete(id);
   }
   //#endregion

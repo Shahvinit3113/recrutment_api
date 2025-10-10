@@ -9,12 +9,12 @@ export class BaseQueries<T extends IBaseEntities> {
 
   getAll(columns?: [keyof T]): string {
     const fields = columns?.length ? columns.join(", ") : "*";
-    return `SELECT ${fields} FROM ${this.table} WHERE IsDeleted = 0 AND TenantId = ?`;
+    return `SELECT ${fields} FROM ${this.table} WHERE IsDeleted = 0 AND OrgId = ?`;
   }
 
   getById(columns?: [keyof T]): string {
     const fields = columns?.length ? columns.join(", ") : "*";
-    return `SELECT ${fields} FROM ${this.table} WHERE Uid = ? AND TenantId = ? AND IsDeleted = 0`;
+    return `SELECT ${fields} FROM ${this.table} WHERE Uid = ? AND OrgId = ? AND IsDeleted = 0`;
   }
 
   create(entity: T): string {

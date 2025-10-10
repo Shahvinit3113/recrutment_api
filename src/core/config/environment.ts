@@ -1,8 +1,24 @@
 import dotenv from "dotenv";
+import path from "path";
 import { Algorithm } from "jsonwebtoken";
 import { CipherGCMTypes } from "crypto";
 
-dotenv.config();
+// Load environment-specific .env file
+const NODE_ENV = process.env.NODE_ENV || "development";
+const envFile = `.env.${NODE_ENV}`;
+const envPath = path.resolve(process.cwd(), envFile);
+
+// Load the environment file
+const result = dotenv.config({ path: envPath });
+
+// If environment-specific file doesn't exist, fall back to .env
+if (result.error) {
+  console.warn(`Warning: Could not load ${envFile}, falling back to .env`);
+  dotenv.config();
+}
+
+console.log(`🌍 Environment: ${NODE_ENV}`);
+console.log(`📄 Config file: ${envFile}`);
 
 interface EnvironmentConfig {
   NODE_ENV: string;

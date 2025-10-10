@@ -1,4 +1,4 @@
 export const Tables = {
-  User: "user",
-  Gym: "Gym",
+  User: "Users",
+  UserInfo: "userinfo",
 } as const;

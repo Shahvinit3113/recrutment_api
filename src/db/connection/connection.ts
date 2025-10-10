@@ -14,11 +14,6 @@ export class DatabaseConnection {
       password: config.DB_PASSWORD,
       database: config.DB_NAME,
       connectionLimit: config.DB_CONNECTION_LIMIT,
-      charset: "utf8mb4",
-      timezone: "+00:00",
-      dateStrings: false,
-      supportBigNumbers: true,
-      bigNumberStrings: false,
     });
   }
 

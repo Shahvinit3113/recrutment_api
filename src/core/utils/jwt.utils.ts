@@ -6,6 +6,7 @@ interface JWTPayload {
   UserId: string;
   Email: string;
   Role: Role;
+  TenantId: string;
 }
 
 interface JWTOptions {
@@ -89,8 +90,8 @@ export class JWT {
 
   static generateTokenPair(payload: JWTPayload, options?: JWTOptions) {
     return {
-      accessToken: this.encode(payload, options),
-      refreshToken: this.generateRefreshToken(payload, options),
+      AccessToken: this.encode(payload, options),
+      RefreshToken: this.generateRefreshToken(payload, options),
     };
   }
 }

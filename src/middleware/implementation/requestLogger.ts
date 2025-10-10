@@ -1,5 +1,5 @@
+import { logger } from "@/core/utils/logger.utils";
 import { Request, Response, NextFunction } from "express";
-import { logger } from "@/core/helper/logger";
 
 export const requestLogger = (
   req: Request,

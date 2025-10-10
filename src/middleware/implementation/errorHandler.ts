@@ -1,8 +1,10 @@
 import { Request, Response, NextFunction } from "express";
-import { ValidationError } from "./errors/validation.error";
 import { Response as AppResponse } from "@/data/response/response";
-import { InternalServerError } from "./errors/internalServer.error";
-import { UnAuthorizedError } from "./errors/unauthorized.error.";
+import { InternalServerError } from "../errors/internalServer.error";
+import { UnAuthorizedError } from "../errors/unauthorized.error.";
+import { ValidationError } from "../errors/validation.error";
+import { NotFoundError } from "../errors/notFound.error";
+import { UnknownError } from "../errors/unknown.error";
 
 export const errorHandler = (
   error: Error,
@@ -20,6 +22,12 @@ export const errorHandler = (
     status = error.StatusCode;
     message = error.message;
   } else if (error instanceof UnAuthorizedError) {
+    status = error.StatusCode;
+    message = error.message;
+  } else if (error instanceof NotFoundError) {
+    status = error.StatusCode;
+    message = error.message;
+  } else if (error instanceof UnknownError) {
     status = error.StatusCode;
     message = error.message;
   } else {

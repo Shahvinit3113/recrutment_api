@@ -1,12 +1,16 @@
 import { Container } from "inversify";
 import { TYPES } from "./types";
 import { DatabaseConnection } from "@/db/connection/connection";
-import { UserController } from "@/controllers/implementation/user.controller";
-import { GymController } from "@/controllers/implementation/gym.controller";
-import { GymService } from "@/service/implementation/gym.service";
+import { Repository } from "@/repository/base/repository";
+
 import { UserService } from "@/service/implementation/user.service";
-import { GymRepository } from "@/repository/implementation/gym.repository";
-import { UserRepository } from "@/repository/implementation/user.repository";
+import { UserInfoService } from "@/service/implementation/user-info.service";
+import { CallerService } from "@/service/caller/caller.service";
+
+import { UserController } from "@/controllers/implementation/user.controller";
+import { UserInfoController } from "@/controllers/implementation/user-info.controller";
+import { AuthService } from "@/service/implementation/auth.service";
+import { AuthController } from "@/controllers/implementation/auth.controller";
 
 const container = new Container({ defaultScope: "Singleton" });
 
@@ -17,30 +21,34 @@ container
   .inSingletonScope();
 
 //#region Repository
-container
-  .bind<GymRepository>(TYPES.GymRepository)
-  .to(GymRepository)
-  .inSingletonScope();
-
-container
-  .bind<UserRepository>(TYPES.UserRepository)
-  .to(UserRepository)
-  .inSingletonScope();
+container.bind<Repository>(TYPES.Repository).to(Repository).inSingletonScope();
 
 //#region Services
-container.bind<GymService>(TYPES.GymService).to(GymService).inRequestScope();
-
 container.bind<UserService>(TYPES.UserService).to(UserService).inRequestScope();
+container
+  .bind<UserInfoService>(TYPES.UserInfoService)
+  .to(UserInfoService)
+  .inRequestScope();
+container.bind<AuthService>(TYPES.AuthService).to(AuthService).inRequestScope();
+
+container
+  .bind<CallerService>(TYPES.Caller)
+  .to(CallerService)
+  .inSingletonScope();
 
 //#region Controllers
+// Bind controllers by class only (RouteLoader resolves by class)
 container
-  .bind<UserController>(TYPES.UserController)
+  .bind<UserController>(UserController)
   .to(UserController)
   .inRequestScope();
-
 container
-  .bind<GymController>(TYPES.GymController)
-  .to(GymController)
+  .bind<UserInfoController>(UserInfoController)
+  .to(UserInfoController)
+  .inRequestScope();
+container
+  .bind<AuthController>(AuthController)
+  .to(AuthController)
   .inRequestScope();
 
 export { container };
