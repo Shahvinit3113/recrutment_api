@@ -14,7 +14,6 @@
     "start:dev": "cross-env NODE_ENV=development node dist/app.js",
     "start:staging": "cross-env NODE_ENV=staging node dist/app.js",
     "start:production": "cross-env NODE_ENV=production node dist/app.js",
-    "build": "tsc",
     "build:dev": "cross-env NODE_ENV=development tsc",
     "build:staging": "cross-env NODE_ENV=staging tsc",
     "build:production": "cross-env NODE_ENV=production tsc",
@@ -22,8 +21,9 @@
     "test:watch": "cross-env NODE_ENV=test jest --watch",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
-    "clean": "rimraf dist",
-    "prebuild": "npm run clean"
+    "clean": "rm -rf dist",
+    "prebuild": "npm run clean",
+    "build": "tsc"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
