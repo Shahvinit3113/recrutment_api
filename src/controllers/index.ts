@@ -4,12 +4,13 @@ import { UserController } from "./implementation/user.controller";
 import { container } from "@/core/container/container";
 import { UserInfoController } from "./implementation/user-info.controller";
 import { AuthController } from "./implementation/auth.controller";
+import { TaskController } from "./implementation/task.controller";
 
 export function initiControllersRoutes() {
   const router = Router();
   RouteLoader.loadMultipleControllers(
     router,
-    [UserController, UserInfoController, AuthController],
+    [UserController, UserInfoController, AuthController, TaskController],
     container
   );
 

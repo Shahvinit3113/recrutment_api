@@ -7,12 +7,12 @@ export class BaseQueries<T extends IBaseEntities> {
     this.table = table;
   }
 
-  getAll(columns?: [keyof T]): string {
+  getAll(columns?: (keyof T)[]): string {
     const fields = columns?.length ? columns.join(", ") : "*";
     return `SELECT ${fields} FROM ${this.table} WHERE IsDeleted = 0 AND OrgId = ?`;
   }
 
-  getById(columns?: [keyof T]): string {
+  getById(columns?: (keyof T)[]): string {
     const fields = columns?.length ? columns.join(", ") : "*";
     return `SELECT ${fields} FROM ${this.table} WHERE Uid = ? AND OrgId = ? AND IsDeleted = 0`;
   }

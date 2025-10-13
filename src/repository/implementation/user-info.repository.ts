@@ -1,15 +1,13 @@
 import { UserInfo } from "@/data/entities/user-info";
-import { BaseRespository, IBaseRepository } from "../base/base.repository";
+import { BaseRespository } from "../base/base.repository";
 import { DatabaseConnection } from "@/db/connection/connection";
-import { Tables } from "@/db/helper/table";
+import { UserInfoQuery } from "@/db/queries/user-info.query";
 
-export interface IUserInfoRepository extends IBaseRepository<UserInfo> {}
-
-export class UserInfoRepository
-  extends BaseRespository<UserInfo>
-  implements IUserInfoRepository
-{
+export class UserInfoRepository extends BaseRespository<
+  UserInfo,
+  UserInfoQuery
+> {
   constructor(db: DatabaseConnection) {
-    super(db, Tables.UserInfo);
+    super(db, new UserInfoQuery());
   }
 }

@@ -6,10 +6,7 @@ export const TYPES = {
   UserService: Symbol.for("UserService"),
   UserInfoService: Symbol.for("UserInfoService"),
   AuthService: Symbol.for("AuthService"),
-
-  // Controllers
-  UserController: Symbol.for("UserController"),
-  GymController: Symbol.for("GymController"),
+  TaskService: Symbol.for("TaskService"),
 
   // Repository
   Repository: Symbol.for("Repository"),

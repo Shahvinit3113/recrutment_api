@@ -1,18 +1,12 @@
 import { User } from "@/data/entities/user";
 import { DatabaseConnection } from "@/db/connection/connection";
-import { BaseRespository, IBaseRepository } from "../base/base.repository";
+import { BaseRespository } from "../base/base.repository";
 import { Tables } from "@/db/helper/table";
+import { UserQuery } from "@/db/queries/user.query";
 
-export interface IUserRepository extends IBaseRepository<User> {
-  getByEmail(email: string, columns?: [keyof User]): Promise<User | null>;
-}
-
-export class UserRepository
-  extends BaseRespository<User>
-  implements IUserRepository
-{
+export class UserRepository extends BaseRespository<User, UserQuery> {
   constructor(db: DatabaseConnection) {
-    super(db, Tables.User);
+    super(db, new UserQuery());
   }
 
   async getByEmail(email: string, columns?: [keyof User]) {

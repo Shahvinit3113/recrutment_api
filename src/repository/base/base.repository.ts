@@ -1,5 +1,5 @@
 import { DatabaseConnection } from "@/db/connection/connection";
-import { BaseQueries } from "@/db/queries/base.query";
+import { BaseQueries } from "@/db/queries/base/base.query";
 import { inject, injectable } from "inversify";
 import { TYPES } from "@/core/container/types";
 import { IBaseEntities } from "@/data/entities/base-entities";
@@ -20,18 +20,18 @@ export interface IBaseRepository<T> {
  * @template T - Entity type that extends IBaseEntity
  */
 @injectable()
-export class BaseRespository<T extends IBaseEntities>
+export class BaseRespository<T extends IBaseEntities, Q extends BaseQueries<T>>
   implements IBaseRepository<T>
 {
-  protected readonly queries: BaseQueries<T>;
+  protected readonly queries: Q;
   protected readonly _db: DatabaseConnection;
 
   constructor(
     @inject(TYPES.DatabaseConnection) db: DatabaseConnection,
-    table: string
+    query: Q
   ) {
     this._db = db;
-    this.queries = new BaseQueries(table);
+    this.queries = query;
   }
 
   async getAll(params: any[], columns?: [keyof T]): Promise<T[]> {

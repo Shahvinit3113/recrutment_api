@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Gym Management API with Node.js and TypeScript",
   "main": "dist/app.js",
+  "_moduleAliases": {
+    "@": "dist"
+  },
   "scripts": {
     "dev": "cross-env NODE_ENV=development tsx watch src/app.ts",
     "dev:staging": "cross-env NODE_ENV=staging tsx watch src/app.ts",
@@ -35,6 +38,7 @@
     "inversify": "^7.7.1",
     "joi": "^17.9.2",
     "jsonwebtoken": "^9.0.2",
+    "module-alias": "^2.2.3",
     "multer": "^1.4.5-lts.1",
     "mysql2": "^3.11.4",
     "redis": "^4.6.7",
