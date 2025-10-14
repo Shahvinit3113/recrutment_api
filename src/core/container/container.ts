@@ -13,6 +13,8 @@ import { AuthService } from "@/service/implementation/auth.service";
 import { AuthController } from "@/controllers/implementation/auth.controller";
 import { TaskController } from "@/controllers/implementation/task.controller";
 import { TaskService } from "@/service/implementation/task.service";
+import { PositionsService } from "@/service/implementation/positions.service";
+import { PositionsController } from "@/controllers/implementation/positions.controller";
 
 const container = new Container({ defaultScope: "Singleton" });
 
@@ -33,6 +35,10 @@ container
   .inRequestScope();
 container.bind<TaskService>(TYPES.TaskService).to(TaskService).inRequestScope();
 container.bind<AuthService>(TYPES.AuthService).to(AuthService).inRequestScope();
+container
+  .bind<PositionsService>(TYPES.PositionsService)
+  .to(PositionsService)
+  .inRequestScope();
 
 container
   .bind<CallerService>(TYPES.Caller)
@@ -56,6 +62,10 @@ container
 container
   .bind<TaskController>(TaskController)
   .to(TaskController)
+  .inRequestScope();
+container
+  .bind<PositionsController>(PositionsController)
+  .to(PositionsController)
   .inRequestScope();
 
 export { container };

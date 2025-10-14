@@ -25,7 +25,7 @@
     "experimentalDecorators": true,
     "paths": {
       "@/*": ["*"],
-      "@/config/*": ["/core/config/*"],
+      "@/config/*": ["core/config/*"],
       "@/utils/*": ["utils/*"],
       "@/database/*": ["database/*"],
       "@/services/*": ["services/*"],

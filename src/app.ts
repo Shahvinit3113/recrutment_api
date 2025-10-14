@@ -1,5 +1,4 @@
 import "reflect-metadata";
-import "module-alias/register";
 import "@/core/container/container";
 import express, { Application } from "express";
 import { startServer } from "@/server/index";
