@@ -1,6 +1,8 @@
 import { TYPES } from "@/core/container/types";
 import { JWT } from "@/core/utils/jwt.utils";
 import { Security } from "@/core/utils/security.utils";
+import { AuthResult } from "@/data/models/authResult";
+import { LoginRequest } from "@/data/models/loginRequest";
 import { NotFoundError } from "@/middleware/errors/notFound.error";
 import { UnAuthorizedError } from "@/middleware/errors/unauthorized.error.";
 import { ValidationError } from "@/middleware/errors/validation.error";
@@ -8,10 +10,7 @@ import { Repository } from "@/repository/base/repository";
 import { inject } from "inversify";
 
 export interface IAuthService {
-  loginUser(loginCredentials: { Email: string; Password: string }): Promise<{
-    AccessToken: string;
-    RefreshToken: string;
-  }>;
+  loginUser(loginCredentials: LoginRequest): Promise<AuthResult>;
 }
 
 export class AuthService implements IAuthService {
@@ -21,7 +20,7 @@ export class AuthService implements IAuthService {
     this._repository = _repository;
   }
 
-  async loginUser(loginCredentials: { Email: string; Password: string }) {
+  async loginUser(loginCredentials: LoginRequest) {
     this.validateCredentials(loginCredentials);
 
     const user = await this._repository.User.getByEmail(loginCredentials.Email);
@@ -46,7 +45,10 @@ export class AuthService implements IAuthService {
       TenantId: user.OrgId,
     });
 
-    return response;
+    return new AuthResult({
+      AccessToken: response.AccessToken,
+      RefreshToken: response.RefreshToken,
+    });
   }
 
   validateCredentials(loginCredentials: { Email: string; Password: string }) {

@@ -6,6 +6,7 @@ import { UserInfoController } from "./implementation/user-info.controller";
 import { AuthController } from "./implementation/auth.controller";
 import { TaskController } from "./implementation/task.controller";
 import { PositionsController } from "./implementation/positions.controller";
+import { OrganizationController } from "./implementation/organization.controller";
 
 export function initiControllersRoutes() {
   const router = Router();
@@ -17,6 +18,7 @@ export function initiControllersRoutes() {
       AuthController,
       TaskController,
       PositionsController,
+      OrganizationController,
     ],
     container
   );

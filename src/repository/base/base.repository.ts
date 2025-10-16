@@ -5,8 +5,8 @@ import { TYPES } from "@/core/container/types";
 import { IBaseEntities } from "@/data/entities/base-entities";
 
 export interface IBaseRepository<T> {
-  getAll(params: any[], columns?: [keyof T]): Promise<T[]>;
-  getById(id: string, params: any[], columns?: [keyof T]): Promise<T | null>;
+  getAll(params: any[], columns?: (keyof T)[]): Promise<T[]>;
+  getById(id: string, params: any[], columns?: (keyof T)[]): Promise<T | null>;
   create(entity: T): Promise<T>;
   update(entity: T, id: string): Promise<T>;
   softDelete(id: string): Promise<boolean>;
@@ -34,7 +34,7 @@ export class BaseRespository<T extends IBaseEntities, Q extends BaseQueries<T>>
     this.queries = query;
   }
 
-  async getAll(params: any[], columns?: [keyof T]): Promise<T[]> {
+  async getAll(params: any[], columns?: (keyof T)[]): Promise<T[]> {
     const [rows] = await this._db.execute(this.queries.getAll(columns), params);
     return rows as T[];
   }
@@ -42,7 +42,7 @@ export class BaseRespository<T extends IBaseEntities, Q extends BaseQueries<T>>
   async getById(
     id: string,
     params: any[],
-    columns?: [keyof T]
+    columns?: (keyof T)[]
   ): Promise<T | null> {
     const [rows] = await this._db.execute(this.queries.getById(columns), [
       id,

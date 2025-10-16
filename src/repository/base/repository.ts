@@ -5,6 +5,7 @@ import { UserInfoRepository } from "../implementation/user-info.repository";
 import { TaskRepository } from "../implementation/task.repository";
 import { UserRepository } from "../implementation/user.repository";
 import { PositionsRepository } from "../implementation/positions.repository";
+import { OrganizationRepository } from "../implementation/organization.repository";
 
 @injectable()
 export class Repository {
@@ -12,6 +13,7 @@ export class Repository {
   public readonly UserInfo: UserInfoRepository;
   public readonly Task: TaskRepository;
   public readonly Positions: PositionsRepository;
+  public readonly Organization: OrganizationRepository;
 
   constructor(
     @inject(TYPES.DatabaseConnection) dbConnection: DatabaseConnection
@@ -20,5 +22,6 @@ export class Repository {
     this.UserInfo = new UserInfoRepository(dbConnection);
     this.Task = new TaskRepository(dbConnection);
     this.Positions = new PositionsRepository(dbConnection);
+    this.Organization = new OrganizationRepository(dbConnection);
   }
 }

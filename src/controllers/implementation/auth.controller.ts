@@ -5,6 +5,9 @@ import { Response as ApiResponse } from "@/data/response/response";
 import { Request, Response } from "express";
 import { TYPES } from "@/core/container/types";
 import { IAuthService } from "@/service/implementation/auth.service";
+import { Public } from "@/core/decorators/public.decorator";
+import { LoginRequest } from "@/data/models/loginRequest";
+import { AuthResult } from "@/data/models/authResult";
 
 @injectable()
 @controller("/auth")
@@ -15,13 +18,14 @@ export class AuthController {
     this._authService = authService;
   }
 
+  @Public()
   @Post("/login")
   async login(
-    req: Request<any, any, { Email: string; Password: string }, any>,
-    res: Response<ApiResponse<{ AccessToken: string; RefreshToken: string }>>
+    req: Request<any, any, LoginRequest, any>,
+    res: Response<ApiResponse<AuthResult>>
   ) {
     return res.send(
-      new ApiResponse(
+      new ApiResponse<AuthResult>(
         true,
         200,
         "Success",

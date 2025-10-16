@@ -27,9 +27,9 @@ export abstract class VmService<
   TResult
 > implements IVmService<TVm, T, F, TResult>
 {
-  private readonly _repository: IBaseRepository<T>;
-  private readonly _callerService: CallerService;
-  private readonly entityType: new () => T;
+  protected readonly _repository: IBaseRepository<T>;
+  protected readonly _callerService: CallerService;
+  protected readonly entityType: new () => T;
 
   constructor(
     repositry: IBaseRepository<T>,
@@ -45,7 +45,7 @@ export abstract class VmService<
   /**
    * Get all records
    */
-  async getAllAsync(columns?: [keyof T]): Promise<TResult> {
+  async getAllAsync(columns?: (keyof T)[]): Promise<TResult> {
     return (await this._repository.getAll(
       [this._callerService.tenantId],
       columns
@@ -55,7 +55,7 @@ export abstract class VmService<
   /**
    * Get by ID
    */
-  async getByIdAsync(id: string, columns?: [keyof T]): Promise<TResult> {
+  async getByIdAsync(id: string, columns?: (keyof T)[]): Promise<TResult> {
     const entity = await this._repository.getById(
       id,
       [this._callerService.tenantId],

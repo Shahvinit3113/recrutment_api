@@ -9,7 +9,7 @@ import { controller } from "@/core/decorators/controller.decorator";
 import { authenticate } from "@/middleware/implementation/auth";
 
 @injectable()
-@controller("/positions", [authenticate])
+@controller("/position", [authenticate])
 export class PositionsController extends BaseController<
   Positions,
   Positions,
