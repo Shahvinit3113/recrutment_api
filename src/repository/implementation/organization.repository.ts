@@ -7,4 +7,9 @@ export class OrganizationRepository extends BaseRepository<Organization> {
   constructor(db: DatabaseConnection) {
     super(db, Tables.Organization);
   }
+
+  override seletAllQuery(columns?: (keyof Organization)[]): string {
+    const fields = columns?.length ? columns.join(", ") : "*";
+    return `SELECT ${fields} FROM ${Tables.Organization} WHERE IsDeleted = 0`;
+  }
 }

@@ -19,12 +19,12 @@ export abstract class VmService<
   F extends Filter,
   TResult
 > {
-  protected _repository: BaseRepository<T, BaseQueries<T>>;
+  protected _repository: BaseRepository<T>;
   protected readonly _callerService: CallerService;
   protected readonly entityType: new () => T;
 
   constructor(
-    repositry: BaseRepository<T, BaseQueries<T>>,
+    repositry: BaseRepository<T>,
     callerService: CallerService,
     entityType: new () => T
   ) {
