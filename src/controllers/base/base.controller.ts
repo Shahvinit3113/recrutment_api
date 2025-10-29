@@ -1,8 +1,8 @@
 import { Delete, Get, Post, Put } from "@/core/decorators/route.decorator";
 import { IBaseEntities } from "@/data/entities/base-entities";
 import { Filter } from "@/data/filters/filter";
-import { IVmService } from "@/service/vm/vm.service";
 import { Response as ApiResponse } from "@/data/response/response";
+import { VmService } from "@/service/vm/vm.service";
 import { Request, Response } from "express";
 
 export abstract class BaseController<
@@ -11,13 +11,13 @@ export abstract class BaseController<
   F extends Filter,
   TResult
 > {
-  protected readonly _service: IVmService<TVm, T, F, TResult>;
+  protected readonly _service: VmService<TVm, T, F, TResult>;
 
-  constructor(service: IVmService<TVm, T, F, TResult>) {
+  constructor(service: VmService<TVm, T, F, TResult>) {
     this._service = service;
   }
 
-  @Get("/all")
+  @Post("/all")
   async getAll(
     req: Request<any, TResult, F, any>,
     res: Response<ApiResponse<TResult>>
