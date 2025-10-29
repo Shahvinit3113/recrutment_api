@@ -29,7 +29,7 @@ export class Result<T> {
     pageIndex: number,
     pageSize: number,
     totalRecords: number,
-    result: T | null = null
+    result: T[] | null = null
   ): Result<T> {
     return new Result<T>(
       null,
@@ -42,17 +42,17 @@ export class PagedResult<T> {
   PageIndex: number;
   PageSize: number;
   TotalRecords: number;
-  Result: T | null;
+  Records: T[] | null;
 
   constructor(
     pageindex: number,
     pageSize: number,
     totalRecords: number,
-    result: T | null
+    result: T[] | null
   ) {
     this.PageIndex = pageindex;
     this.PageSize = pageSize;
     this.TotalRecords = totalRecords;
-    this.Result = result;
+    this.Records = result;
   }
 }
