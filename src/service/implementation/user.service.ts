@@ -1,24 +1,52 @@
 import { inject, injectable } from "inversify";
-import { IVmService, VmService } from "../vm/vm.service";
+import { VmService } from "../vm/vm.service";
 import { TYPES } from "@/core/container/types";
 import { User } from "@/data/entities/user";
 import { Result } from "@/data/response/response";
 import { Filter } from "@/data/filters/filter";
 import { CallerService } from "../caller/caller.service";
 import { Repository } from "@/repository/base/repository";
-
-export interface IUserService
-  extends IVmService<User, User, Filter, Result<User>> {}
+import { UserRepository } from "@/repository/implementation/user.repository";
+import { ValidationError } from "@/middleware/errors/validation.error";
 
 @injectable()
-export class UserService
-  extends VmService<User, User, Filter, Result<User>>
-  implements IUserService
-{
+export class UserService extends VmService<User, User, Filter, Result<User>> {
+  protected declare _repository: UserRepository;
+
+  //#region Constructor
   constructor(
     @inject(TYPES.Repository) _repository: Repository,
     @inject(TYPES.Caller) _callerService: CallerService
   ) {
     super(_repository.User, _callerService, User);
+  }
+
+  //#region Add
+  public override async validateAdd(entity: User): Promise<void> {
+    await this.validateDuplicateUser(entity, null);
+  }
+
+  //#region Update
+  public override async validateUpdate(entity: User): Promise<void> {
+    await this.validateDuplicateUser(entity, entity.Uid);
+  }
+
+  //#region Private Functions
+  /**
+   *
+   * @param user
+   * @param id
+   * @returns
+   */
+  private async validateDuplicateUser(user: User, id: string | null = null) {
+    const duplicateUser = await this._repository.getByEmail(user.Email);
+
+    if (duplicateUser == null || !duplicateUser) {
+      return;
+    }
+
+    if (id?.length && duplicateUser.Uid != id) {
+      throw new ValidationError("User with same email already exists");
+    }
   }
 }

@@ -1,10 +1,10 @@
 import { Task } from "@/data/entities/task";
-import { BaseRespository } from "../base/base.repository";
 import { DatabaseConnection } from "@/db/connection/connection";
-import { TaskQuery } from "@/db/queries/task.query";
+import { BaseRepository } from "../base/base.repository";
+import { Tables } from "@/db/helper/table";
 
-export class TaskRepository extends BaseRespository<Task, TaskQuery> {
+export class TaskRepository extends BaseRepository<Task> {
   constructor(db: DatabaseConnection) {
-    super(db, new TaskQuery());
+    super(db, Tables.Task);
   }
 }

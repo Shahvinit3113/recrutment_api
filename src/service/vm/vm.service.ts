@@ -1,15 +1,8 @@
 import { IBaseEntities } from "@/data/entities/base-entities";
 import { Filter } from "@/data/filters/filter";
 import { CallerService } from "../caller/caller.service";
-import { IBaseRepository } from "@/repository/base/base.repository";
-
-export interface IVmService<TVm, T, F, TResult> {
-  getAllAsync(columns?: [keyof T]): Promise<TResult>;
-  getByIdAsync(id: string, columns?: [keyof T]): Promise<TResult>;
-  createAsync(model: TVm): Promise<TResult>;
-  updateAsync(model: TVm, id: string): Promise<TResult>;
-  deleteAsync(id: string): Promise<boolean>;
-}
+import { BaseRepository } from "@/repository/base/base.repository";
+import { BaseQueries } from "@/db/queries/base/base.query";
 
 /**
  * Enhanced service class that works with view models and provides
@@ -25,14 +18,13 @@ export abstract class VmService<
   T extends IBaseEntities,
   F extends Filter,
   TResult
-> implements IVmService<TVm, T, F, TResult>
-{
-  protected readonly _repository: IBaseRepository<T>;
+> {
+  protected _repository: BaseRepository<T, BaseQueries<T>>;
   protected readonly _callerService: CallerService;
   protected readonly entityType: new () => T;
 
   constructor(
-    repositry: IBaseRepository<T>,
+    repositry: BaseRepository<T, BaseQueries<T>>,
     callerService: CallerService,
     entityType: new () => T
   ) {

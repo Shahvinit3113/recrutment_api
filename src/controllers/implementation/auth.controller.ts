@@ -4,17 +4,17 @@ import { inject, injectable } from "inversify";
 import { Response as ApiResponse } from "@/data/response/response";
 import { Request, Response } from "express";
 import { TYPES } from "@/core/container/types";
-import { IAuthService } from "@/service/implementation/auth.service";
 import { Public } from "@/core/decorators/public.decorator";
 import { LoginRequest } from "@/data/models/loginRequest";
 import { AuthResult } from "@/data/models/authResult";
+import { AuthService } from "@/service/implementation/auth.service";
 
 @injectable()
 @controller("/auth")
 export class AuthController {
-  private readonly _authService: IAuthService;
+  private readonly _authService: AuthService;
 
-  constructor(@inject(TYPES.AuthService) authService: IAuthService) {
+  constructor(@inject(TYPES.AuthService) authService: AuthService) {
     this._authService = authService;
   }
 

@@ -7,17 +7,17 @@ export class BaseQueries<T extends IBaseEntities> {
     this.table = table;
   }
 
-  getAll(columns?: (keyof T)[]): string {
+  seletAllQuery(columns?: (keyof T)[]): string {
     const fields = columns?.length ? columns.join(", ") : "*";
     return `SELECT ${fields} FROM ${this.table} WHERE IsDeleted = 0 AND OrgId = ?`;
   }
 
-  getById(columns?: (keyof T)[]): string {
+  selectByIdQuery(columns?: (keyof T)[]): string {
     const fields = columns?.length ? columns.join(", ") : "*";
     return `SELECT ${fields} FROM ${this.table} WHERE Uid = ? AND OrgId = ? AND IsDeleted = 0`;
   }
 
-  create(entity: T): string {
+  insertQuery(entity: T): string {
     const keys = Object.keys(entity).filter(
       (k) => entity[k as keyof T] !== undefined
     );
@@ -27,7 +27,7 @@ export class BaseQueries<T extends IBaseEntities> {
     )}) VALUES (${placeholders})`;
   }
 
-  update(entity: T): string {
+  putQuery(entity: T): string {
     const keys = Object.keys(entity).filter(
       (k) => k !== "Uid" && entity[k as keyof T] !== undefined
     );
@@ -35,19 +35,19 @@ export class BaseQueries<T extends IBaseEntities> {
     return `UPDATE ${this.table} SET ${setClause} WHERE Uid = ?`;
   }
 
-  softDelete(): string {
+  softDeleteQuery(): string {
     return `UPDATE ${this.table} SET IsDeleted = 1 WHERE Uid = ?`;
   }
 
-  hardDelete(): string {
+  hardDeleteQuery(): string {
     return `DELETE FROM ${this.table} WHERE Uid = ?`;
   }
 
-  softDeleteMany(): string {
-    return `UPDATE ${this.table} SET DeletedOn = ? WHERE Uid IN (?)`;
+  softDeleteManyQuery(): string {
+    return `UPDATE ${this.table} SET IsDeleted = 1, DeletedOn = ? WHERE Uid IN (?)`;
   }
 
-  hardDeleteMany(): string {
+  hardDeleteManyQuery(): string {
     return `DELETE FROM ${this.table} WHERE Uid IN (?)`;
   }
 }

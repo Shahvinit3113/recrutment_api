@@ -9,11 +9,7 @@ import { ValidationError } from "@/middleware/errors/validation.error";
 import { Repository } from "@/repository/base/repository";
 import { inject } from "inversify";
 
-export interface IAuthService {
-  loginUser(loginCredentials: LoginRequest): Promise<AuthResult>;
-}
-
-export class AuthService implements IAuthService {
+export class AuthService {
   private readonly _repository: Repository;
 
   constructor(@inject(TYPES.Repository) _repository: Repository) {

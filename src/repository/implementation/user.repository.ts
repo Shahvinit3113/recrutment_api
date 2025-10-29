@@ -1,12 +1,11 @@
 import { User } from "@/data/entities/user";
 import { DatabaseConnection } from "@/db/connection/connection";
-import { BaseRespository } from "../base/base.repository";
+import { BaseRepository } from "../base/base.repository";
 import { Tables } from "@/db/helper/table";
-import { UserQuery } from "@/db/queries/user.query";
 
-export class UserRepository extends BaseRespository<User, UserQuery> {
+export class UserRepository extends BaseRepository<User> {
   constructor(db: DatabaseConnection) {
-    super(db, new UserQuery());
+    super(db, Tables.User);
   }
 
   async getByEmail(email: string, columns?: [keyof User]) {

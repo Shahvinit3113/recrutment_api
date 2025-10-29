@@ -1,4 +1,5 @@
 import { IBaseEntities } from "@/data/entities/base-entities";
+import { User } from "@/data/entities/user";
 
 // ============================================
 // Types & Interfaces
@@ -364,6 +365,10 @@ export class BaseQueries<T extends IBaseEntities> {
 // Usage Example
 // ============================================
 
+const userQueries = new BaseQueries<User>("Users");
+
+userQueries.getByConditions([], "", { orderBy: [] });
+
 /*
 interface IUser extends IBaseEntities {
   Name: string;
@@ -371,7 +376,6 @@ interface IUser extends IBaseEntities {
   Age: number;
 }
 
-const userQueries = new BaseQueries<IUser>('Users');
 
 // Simple get all
 const { sql, params } = userQueries.getAll({ 

@@ -4,38 +4,24 @@ import { inject, injectable } from "inversify";
 import { TYPES } from "@/core/container/types";
 import { IBaseEntities } from "@/data/entities/base-entities";
 
-export interface IBaseRepository<T> {
-  getAll(params: any[], columns?: (keyof T)[]): Promise<T[]>;
-  getById(id: string, params: any[], columns?: (keyof T)[]): Promise<T | null>;
-  create(entity: T): Promise<T>;
-  update(entity: T, id: string): Promise<T>;
-  softDelete(id: string): Promise<boolean>;
-  hardDelete(id: string): Promise<boolean>;
-  softDeleteMultiple(ids: string[]): Promise<boolean>;
-  hardDeleteMultiple(ids: string[]): Promise<boolean>;
-}
-
 /**
  * Base repository implementation providing common CRUD operations
  * @template T - Entity type that extends IBaseEntity
  */
 @injectable()
-export class BaseRespository<T extends IBaseEntities, Q extends BaseQueries<T>>
-  implements IBaseRepository<T>
-{
-  protected readonly queries: Q;
+export class BaseRepository<T extends IBaseEntities> extends BaseQueries<T> {
   protected readonly _db: DatabaseConnection;
 
   constructor(
     @inject(TYPES.DatabaseConnection) db: DatabaseConnection,
-    query: Q
+    table: string
   ) {
+    super(table);
     this._db = db;
-    this.queries = query;
   }
 
   async getAll(params: any[], columns?: (keyof T)[]): Promise<T[]> {
-    const [rows] = await this._db.execute(this.queries.getAll(columns), params);
+    const [rows] = await this._db.execute(this.seletAllQuery(columns), params);
     return rows as T[];
   }
 
@@ -44,7 +30,7 @@ export class BaseRespository<T extends IBaseEntities, Q extends BaseQueries<T>>
     params: any[],
     columns?: (keyof T)[]
   ): Promise<T | null> {
-    const [rows] = await this._db.execute(this.queries.getById(columns), [
+    const [rows] = await this._db.execute(this.selectByIdQuery(columns), [
       id,
       ...params,
     ]);
@@ -53,7 +39,7 @@ export class BaseRespository<T extends IBaseEntities, Q extends BaseQueries<T>>
   }
 
   async create(entity: T): Promise<T> {
-    const query = this.queries.create(entity);
+    const query = this.insertQuery(entity);
     const values = Object.values(entity).map((value) =>
       value === undefined ? null : value
     );
@@ -62,35 +48,35 @@ export class BaseRespository<T extends IBaseEntities, Q extends BaseQueries<T>>
   }
 
   async update(entity: T, id: string): Promise<T> {
-    const query = this.queries.update(entity);
+    const query = this.putQuery(entity);
     const values = [...Object.values(entity).slice(1), id];
     await this._db.execute(query, values);
     return entity;
   }
 
   async softDelete(id: string): Promise<boolean> {
-    const query = this.queries.softDelete();
+    const query = this.softDeleteQuery();
     await this._db.execute(query, [id]);
 
     return true;
   }
 
   async hardDelete(id: string): Promise<boolean> {
-    const query = this.queries.hardDelete();
+    const query = this.hardDeleteQuery();
     await this._db.execute(query, [id]);
 
     return true;
   }
 
   async softDeleteMultiple(ids: string[]): Promise<boolean> {
-    const query = this.queries.softDeleteMany();
+    const query = this.softDeleteManyQuery();
     await this._db.execute(query, [ids]);
 
     return true;
   }
 
   async hardDeleteMultiple(ids: string[]): Promise<boolean> {
-    const query = this.queries.hardDeleteMany();
+    const query = this.hardDeleteManyQuery();
     await this._db.execute(query, [ids]);
 
     return true;

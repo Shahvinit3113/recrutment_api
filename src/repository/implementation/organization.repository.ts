@@ -1,13 +1,10 @@
 import { Organization } from "@/data/entities/organization";
-import { BaseRespository } from "../base/base.repository";
-import { OrganizationQuery } from "@/db/queries/organization.query";
 import { DatabaseConnection } from "@/db/connection/connection";
+import { BaseRepository } from "../base/base.repository";
+import { Tables } from "@/db/helper/table";
 
-export class OrganizationRepository extends BaseRespository<
-  Organization,
-  OrganizationQuery
-> {
+export class OrganizationRepository extends BaseRepository<Organization> {
   constructor(db: DatabaseConnection) {
-    super(db, new OrganizationQuery());
+    super(db, Tables.Organization);
   }
 }
