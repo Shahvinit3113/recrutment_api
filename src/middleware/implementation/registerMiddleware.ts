@@ -12,7 +12,7 @@ import { diScope } from "./diScope";
 export const registerMiddleware = (app: Application): void => {
   app.use(helmet());
   app.use(compression());
-  // app.use(cors(corsOptions));
+  app.use(cors(corsOptions));
   app.use(
     express.json({
       limit: `${Math.ceil(config.MAX_FILE_SIZE / 1024 / 1024)}mb`,
