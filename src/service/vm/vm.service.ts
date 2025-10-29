@@ -3,6 +3,7 @@ import { Filter } from "@/data/filters/filter";
 import { CallerService } from "../caller/caller.service";
 import { BaseRepository } from "@/repository/base/base.repository";
 import { BaseQueries } from "@/db/queries/base/base.query";
+import { Result } from "@/data/response/response";
 
 /**
  * Enhanced service class that works with view models and provides
@@ -38,10 +39,12 @@ export abstract class VmService<
    * Get all records
    */
   async getAllAsync(columns?: (keyof T)[]): Promise<TResult> {
-    return (await this._repository.getAll(
-      [this._callerService.tenantId],
-      columns
-    )) as TResult;
+    return Result.toPagedResult(
+      1,
+      1,
+      1,
+      await this._repository.getAll([this._callerService.tenantId], columns)
+    ) as TResult;
   }
 
   /**
