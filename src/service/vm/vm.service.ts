@@ -5,6 +5,7 @@ import { BaseRepository } from "@/repository/base/base.repository";
 import { BaseQueries } from "@/db/queries/base/base.query";
 import { Result } from "@/data/response/response";
 import { Utility } from "@/core/utils/common.utils";
+import { ValidationError } from "@/middleware/errors/validation.error";
 
 /**
  * Enhanced service class that works with view models and provides
@@ -25,6 +26,12 @@ export abstract class VmService<
   protected readonly _callerService: CallerService;
   protected readonly entityType: new () => T;
 
+  /**
+   * Initializes a new instance of the VmService
+   * @param repositry Base repository instance for database operations
+   * @param callerService Service containing context information about the current caller
+   * @param entityType Constructor function for creating new instances of the entity
+   */
   constructor(
     repositry: BaseRepository<T>,
     callerService: CallerService,
@@ -37,7 +44,11 @@ export abstract class VmService<
 
   //#region Get
   /**
-   * Get all records
+   * Retrieves all records for the current organization
+   * @param columns Optional array of specific columns to retrieve
+   * @returns Promise resolving to a paged result containing all matching records
+   * @remarks This method automatically filters by the current tenant ID and
+   * transforms the database entities into the appropriate result type
    */
   async getAllAsync(columns?: (keyof T)[]): Promise<TResult> {
     return Result.toPagedResult(
@@ -49,7 +60,13 @@ export abstract class VmService<
   }
 
   /**
-   * Get by ID
+   * Retrieves a specific record by its unique identifier
+   * @param id The unique identifier of the record to retrieve
+   * @param columns Optional array of specific columns to retrieve
+   * @returns Promise resolving to the requested record
+   * @throws Error if the record is not found or doesn't belong to the current organization
+   * @remarks This method validates tenant access and transforms the database entity
+   * into the appropriate result type
    */
   async getByIdAsync(id: string, columns?: (keyof T)[]): Promise<TResult> {
     const entity = await this._repository.getById(
@@ -67,7 +84,16 @@ export abstract class VmService<
 
   //#region Add
   /**
-   * Create new record
+   * Creates a new record in the system
+   * @param model The view model containing the data for the new record
+   * @returns Promise resolving to the newly created record
+   * @remarks This method follows a complete lifecycle:
+   * 1. Validates the input model
+   * 2. Converts view model to entity
+   * 3. Applies pre-creation operations (setting metadata)
+   * 4. Persists the entity
+   * 5. Applies post-creation operations
+   * 6. Transforms result for response
    */
   async createAsync(model: TVm): Promise<TResult> {
     await this.validateAdd(model);
@@ -84,12 +110,25 @@ export abstract class VmService<
   }
 
   /**
-   * Validate add operation
+   * Validates the model before creating a new record
+   * @param entity The view model to validate
+   * @throws Error if validation fails
+   * @remarks Override this method in derived classes to implement
+   * specific validation rules for entity creation
    */
   async validateAdd(entity: TVm) {}
 
   /**
-   * Pre-add operation
+   * Performs operations on the entity before it is created
+   * @param model The original view model
+   * @param entity The entity being created
+   * @remarks Sets default values and metadata including:
+   * - Unique identifier (UUID)
+   * - Organization ID
+   * - Creation timestamp
+   * - Created by user ID
+   * - Active status
+   * Override in derived classes to add custom pre-creation logic
    */
   async preAddOperation(model: TVm, entity: T) {
     entity.Uid = Utility.generateUUID();
@@ -101,7 +140,12 @@ export abstract class VmService<
   }
 
   /**
-   * Post-add operation
+   * Performs operations after an entity has been created
+   * @param entity The original view model
+   * @param model The newly created entity
+   * @remarks Override this method in derived classes to implement
+   * additional operations that need to be performed after entity creation,
+   * such as creating related records or triggering events
    */
   async postAddOperation(entity: TVm, model: T) {}
 
@@ -109,7 +153,18 @@ export abstract class VmService<
 
   //#region Update
   /**
-   * Update record
+   * Updates an existing record in the system
+   * @param model The view model containing the updated data
+   * @param id The unique identifier of the record to update
+   * @returns Promise resolving to the updated record
+   * @throws Error if the record is not found or validation fails
+   * @remarks This method follows a complete update lifecycle:
+   * 1. Validates the update model
+   * 2. Retrieves the existing entity
+   * 3. Applies pre-update operations
+   * 4. Persists the changes
+   * 5. Applies post-update operations
+   * 6. Transforms result for response
    */
   async updateAsync(model: TVm, id: string): Promise<TResult> {
     await this.validateUpdate(model);
@@ -122,6 +177,8 @@ export abstract class VmService<
       throw new Error(`${this.entityType.name} not found`);
     }
 
+    this.mergeModelToEntity(model, entity);
+
     await this.preUpdateOperation(model, entity);
 
     entity = await this._repository.update(entity, id);
@@ -132,20 +189,41 @@ export abstract class VmService<
   }
 
   /**
-   * Validate update operation
+   * Validates the model before updating a record
+   * @param entity The view model to validate
+   * @throws Error if validation fails
+   * @remarks Override this method in derived classes to implement
+   * specific validation rules for entity updates, such as
+   * checking for concurrent modifications or business rule violations
    */
   async validateUpdate(entity: TVm) {}
 
   /**
-   * Pre-update operation
+   * Performs operations on the entity before it is updated
+   * @param model The view model containing updated data
+   * @param entity The existing entity being updated
+   * @remarks Updates metadata including:
+   * - Last modification timestamp
+   * - Modified by user ID
+   * Override in derived classes to implement custom pre-update logic
+   * such as handling related entities or maintaining audit trails
    */
   async preUpdateOperation(model: TVm, entity: T) {
     entity.UpdatedOn = new Date();
     entity.UpdatedBy = this._callerService.userId;
+
+    if (entity.OrgId != this._callerService.tenantId) {
+      throw new ValidationError("Not authorized");
+    }
   }
 
   /**
-   * Post-update operation
+   * Performs operations after an entity has been updated
+   * @param entity The view model used for update
+   * @param model The updated entity
+   * @remarks Override this method in derived classes to implement
+   * additional operations after update, such as updating related records,
+   * triggering notifications, or maintaining cache consistency
    */
   async postUpdateOperation(entity: TVm, model: T) {}
 
@@ -153,7 +231,12 @@ export abstract class VmService<
 
   //#region Delete
   /**
-   * Delete record
+   * Performs a soft delete on a record
+   * @param id The unique identifier of the record to delete
+   * @returns Promise resolving to boolean indicating success
+   * @remarks This method performs a soft delete by marking the record
+   * as deleted rather than removing it from the database. This maintains
+   * referential integrity and allows for potential recovery
    */
   async deleteAsync(id: string): Promise<boolean> {
     return await this._repository.softDelete(id);
@@ -170,6 +253,34 @@ export abstract class VmService<
       (entity as any)[key] = (vm as any)[key];
     }
     return entity;
+  }
+
+  /**
+   * Merges view model properties into the existing entity
+   * @param model The view model with updated values
+   * @param entity The existing entity to update
+   * @remarks Copies all properties from the model to the entity,
+   * excluding metadata fields that are managed by the system
+   */
+  protected mergeModelToEntity(model: TVm, entity: T): void {
+    const excludedFields = [
+      "Uid",
+      "OrgId",
+      "CreatedOn",
+      "CreatedBy",
+      "UpdatedOn",
+      "UpdatedBy",
+      "DeletedOn",
+      "DeletedBy",
+      "IsDeleted",
+    ];
+
+    for (const key in model) {
+      // Skip system-managed fields
+      if (!excludedFields.includes(key)) {
+        (entity as any)[key] = (model as any)[key];
+      }
+    }
   }
 
   /**

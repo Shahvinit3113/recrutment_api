@@ -20,11 +20,24 @@ export class BaseRepository<T extends IBaseEntities> extends BaseQueries<T> {
     this._db = db;
   }
 
+  /**
+   * Retrieves all active records for a given organization
+   * @param params Array of parameters including organization ID
+   * @param columns Optional array of column names to select
+   * @returns Promise resolving to array of entities
+   */
   async getAll(params: any[], columns?: (keyof T)[]): Promise<T[]> {
     const [rows] = await this._db.execute(this.seletAllQuery(columns), params);
     return rows as T[];
   }
 
+  /**
+   * Retrieves a single record by its unique identifier
+   * @param id Unique identifier of the record
+   * @param params Array of parameters including organization ID
+   * @param columns Optional array of column names to select
+   * @returns Promise resolving to entity or null if not found
+   */
   async getById(
     id: string,
     params: any[],
@@ -38,6 +51,11 @@ export class BaseRepository<T extends IBaseEntities> extends BaseQueries<T> {
     return result || null;
   }
 
+  /**
+   * Creates a new record in the database
+   * @param entity Entity to create
+   * @returns Promise resolving to created entity
+   */
   async create(entity: T): Promise<T> {
     const query = this.insertQuery(entity);
     const values = Object.values(entity).map((value) =>
@@ -47,6 +65,12 @@ export class BaseRepository<T extends IBaseEntities> extends BaseQueries<T> {
     return entity;
   }
 
+  /**
+   * Updates an existing record in the database
+   * @param entity Updated entity data
+   * @param id Unique identifier of the record to update
+   * @returns Promise resolving to updated entity
+   */
   async update(entity: T, id: string): Promise<T> {
     const query = this.putQuery(entity);
     const values = [...Object.values(entity).slice(1), id];
@@ -54,6 +78,11 @@ export class BaseRepository<T extends IBaseEntities> extends BaseQueries<T> {
     return entity;
   }
 
+  /**
+   * Marks a record as deleted without removing it from the database
+   * @param id Unique identifier of the record to delete
+   * @returns Promise resolving to boolean indicating success
+   */
   async softDelete(id: string): Promise<boolean> {
     const query = this.softDeleteQuery();
     await this._db.execute(query, [id]);
@@ -61,6 +90,11 @@ export class BaseRepository<T extends IBaseEntities> extends BaseQueries<T> {
     return true;
   }
 
+  /**
+   * Permanently removes a record from the database
+   * @param id Unique identifier of the record to delete
+   * @returns Promise resolving to boolean indicating success
+   */
   async hardDelete(id: string): Promise<boolean> {
     const query = this.hardDeleteQuery();
     await this._db.execute(query, [id]);

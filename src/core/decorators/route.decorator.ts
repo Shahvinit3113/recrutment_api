@@ -3,7 +3,17 @@ import { RouteDefinition, RouteMethods } from "./types";
 
 export const ROUTES_METADATA = Symbol("routes");
 
+/**
+ * Creates a route decorator factory for a specific HTTP method
+ * @param method The HTTP method to create a decorator for
+ * @returns A decorator function that can be used to define routes
+ */
 function createRouteDecorator(method: RouteMethods) {
+  /**
+   * Route decorator function
+   * @param path Optional URL path for the route
+   * @param middlewares Optional array of middleware handlers
+   */
   return function (path: string = "", middlewares: RequestHandler[] = []) {
     return function (
       target: any,
