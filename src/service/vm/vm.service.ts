@@ -4,6 +4,7 @@ import { CallerService } from "../caller/caller.service";
 import { BaseRepository } from "@/repository/base/base.repository";
 import { BaseQueries } from "@/db/queries/base/base.query";
 import { Result } from "@/data/response/response";
+import { Utility } from "@/core/utils/common.utils";
 
 /**
  * Enhanced service class that works with view models and provides
@@ -91,6 +92,7 @@ export abstract class VmService<
    * Pre-add operation
    */
   async preAddOperation(model: TVm, entity: T) {
+    entity.Uid = Utility.generateUUID();
     entity.CreatedOn = new Date();
     entity.IsActive = true;
     entity.IsDeleted = false;
@@ -164,9 +166,7 @@ export abstract class VmService<
   toEntity(vm: TVm): T {
     const entity = new this.entityType();
     for (const key in vm) {
-      if (Object.hasOwnProperty.call(entity, key)) {
-        (entity as any)[key] = (vm as any)[key];
-      }
+      (entity as any)[key] = (vm as any)[key];
     }
     return entity;
   }

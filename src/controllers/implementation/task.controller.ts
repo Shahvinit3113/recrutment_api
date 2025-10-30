@@ -6,7 +6,7 @@ import { inject, injectable } from "inversify";
 import { controller } from "@/core/decorators/controller.decorator";
 import { authenticate } from "@/middleware/implementation/auth";
 import { TYPES } from "@/core/container/types";
-import { ITaskService } from "@/service/implementation/task.service";
+import { TaskService } from "@/service/implementation/task.service";
 
 @injectable()
 @controller("/task", [authenticate])
@@ -16,7 +16,7 @@ export class TaskController extends BaseController<
   Filter,
   Result<Task>
 > {
-  constructor(@inject(TYPES.TaskService) taskService: ITaskService) {
+  constructor(@inject(TYPES.TaskService) taskService: TaskService) {
     super(taskService);
   }
 }

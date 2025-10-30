@@ -22,7 +22,7 @@ export class CallerService {
   setUnknownCaller() {
     this.caller = new Caller({
       Email: "",
-      Role: Role.Unknown,
+      Role: Role.Employee,
       UserId: "0000",
       TenantId: "0000",
     });
