@@ -14,11 +14,9 @@ export class Logger implements ILogger {
     this.logger = winston.createLogger({
       level: process.env.LOG_LEVEL || "info",
       format: winston.format.combine(
-        winston.format.timestamp(),
         winston.format.errors({ stack: true }),
         winston.format.json()
       ),
-      defaultMeta: { service: "gym-api" },
       transports: [
         new winston.transports.File({
           filename: "logs/error.log",
