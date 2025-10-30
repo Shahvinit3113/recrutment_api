@@ -93,6 +93,7 @@ export abstract class VmService<
    */
   async preAddOperation(model: TVm, entity: T) {
     entity.Uid = Utility.generateUUID();
+    entity.OrgId = this._callerService.tenantId;
     entity.CreatedOn = new Date();
     entity.IsActive = true;
     entity.IsDeleted = false;
