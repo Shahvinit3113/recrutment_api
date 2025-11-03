@@ -12,5 +12,7 @@ const app: Application = express();
 registerMiddleware(app);
 
 app.use(errorHandler);
+
 app.use("/api", initiControllersRoutes());
+
 void startServer(app);
