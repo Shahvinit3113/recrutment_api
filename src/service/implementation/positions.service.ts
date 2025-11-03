@@ -6,13 +6,14 @@ import { inject, injectable } from "inversify";
 import { TYPES } from "@/core/container/types";
 import { Repository } from "@/repository/base/repository";
 import { CallerService } from "../caller/caller.service";
+import { PositionsResult } from "@/data/results/position.result";
 
 @injectable()
 export class PositionsService extends VmService<
   Positions,
   Positions,
   Filter,
-  Result<Positions>
+  Result<PositionsResult>
 > {
   constructor(
     @inject(TYPES.Repository) repository: Repository,
