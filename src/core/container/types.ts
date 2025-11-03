@@ -9,6 +9,7 @@ export const TYPES = {
   TaskService: Symbol.for("TaskService"),
   PositionsService: Symbol.for("PositionsService"),
   OrganizationService: Symbol.for("OrganizationService"),
+  DepartmentService: Symbol.for("DepartmentService"),
 
   // Repository
   Repository: Symbol.for("Repository"),

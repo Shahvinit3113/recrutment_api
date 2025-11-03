@@ -4,4 +4,5 @@ export const Tables = {
   Task: "Task",
   Positions: "Positions",
   Organization: "Organization",
+  Department: "Department",
 } as const;

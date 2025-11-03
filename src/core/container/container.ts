@@ -17,6 +17,8 @@ import { PositionsService } from "@/service/implementation/positions.service";
 import { PositionsController } from "@/controllers/implementation/positions.controller";
 import { OrganizationService } from "@/service/implementation/organization.service";
 import { OrganizationController } from "@/controllers/implementation/organization.controller";
+import { DepartmentService } from "@/service/implementation/department.service";
+import { DepartmentController } from "@/controllers/implementation/department.controller";
 
 const container = new Container({ defaultScope: "Singleton" });
 
@@ -44,6 +46,10 @@ container
 container
   .bind<OrganizationService>(TYPES.OrganizationService)
   .to(OrganizationService)
+  .inRequestScope();
+container
+  .bind<DepartmentService>(TYPES.DepartmentService)
+  .to(DepartmentService)
   .inRequestScope();
 
 container
@@ -76,6 +82,10 @@ container
 container
   .bind<OrganizationController>(OrganizationController)
   .to(OrganizationController)
+  .inRequestScope();
+container
+  .bind<DepartmentController>(DepartmentController)
+  .to(DepartmentController)
   .inRequestScope();
 
 export { container };
