@@ -1,4 +1,4 @@
-# Gym Management API (Node.js + TypeScript)
+# Recruitment API (Node.js + TypeScript)
 
 A modular, production-grade REST API for managing gyms and users. Built with Express, TypeScript, InversifyJS (DI), MySQL2, and structured into clean layers (controllers → services → repositories → queries) with request-scoped dependency injection and standardized responses.
 
