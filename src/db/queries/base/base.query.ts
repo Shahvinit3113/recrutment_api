@@ -45,7 +45,7 @@ export class BaseQueries<T extends BaseEntities> {
       (k) => entity[k as keyof T] !== undefined
     );
     const placeholders = keys.map(() => "?").join(",");
-    return `INSERT INTO '${this.table} (${keys.join(
+    return `INSERT INTO ${this.table} (${keys.join(
       ","
     )}) VALUES (${placeholders})`;
   }
