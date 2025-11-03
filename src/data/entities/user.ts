@@ -6,5 +6,3 @@ export class User extends BaseEntities {
   Password: string = "";
   Email: string = "";
 }
-
-console.log(new User());
