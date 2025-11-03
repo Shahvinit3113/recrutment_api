@@ -1,4 +1,4 @@
-import { IBaseEntities } from "@/data/entities/base-entities";
+import { BaseEntities } from "@/data/entities/base-entities";
 import { User } from "@/data/entities/user";
 
 // ============================================
@@ -123,7 +123,7 @@ export class QueryBuilderHelper {
 // Enhanced Base Queries
 // ============================================
 
-export class BaseQueries<T extends IBaseEntities> {
+export class BaseQueries<T extends BaseEntities> {
   private readonly table: string;
   private readonly defaultSoftDeleteColumn = "IsDeleted";
   private readonly defaultSoftDeleteValue = 1;

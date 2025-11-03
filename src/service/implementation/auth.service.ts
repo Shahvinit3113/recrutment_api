@@ -16,6 +16,14 @@ export class AuthService {
     this._repository = _repository;
   }
 
+  /**
+   * Authenticates a user and generates access tokens
+   * @param loginCredentials User's login credentials containing email and password
+   * @returns AuthResult containing access and refresh tokens
+   * @throws ValidationError if credentials are missing
+   * @throws NotFoundError if user doesn't exist
+   * @throws UnAuthorizedError if password is invalid
+   */
   async loginUser(loginCredentials: LoginRequest) {
     this.validateCredentials(loginCredentials);
 
@@ -47,6 +55,11 @@ export class AuthService {
     });
   }
 
+  /**
+   * Validates the presence of required login credentials
+   * @param loginCredentials Object containing email and password
+   * @throws ValidationError if email or password is missing
+   */
   validateCredentials(loginCredentials: { Email: string; Password: string }) {
     if (!loginCredentials?.Email && !loginCredentials?.Email?.length) {
       throw new ValidationError("Email is required");

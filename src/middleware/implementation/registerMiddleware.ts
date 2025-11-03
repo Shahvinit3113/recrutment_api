@@ -7,7 +7,6 @@ import express from "express";
 import { corsOptions } from "@/core/config/cors";
 import { config } from "@/core/config/environment";
 import { requestLogger } from "./requestLogger";
-import { diScope } from "./diScope";
 
 export const registerMiddleware = (app: Application): void => {
   app.use(helmet());
@@ -20,7 +19,6 @@ export const registerMiddleware = (app: Application): void => {
   );
   app.use(express.urlencoded({ extended: true }));
   app.use(requestLogger);
-  app.use(diScope);
   app.use(
     rateLimit({
       windowMs: config.RATE_LIMIT_WINDOW_MS,

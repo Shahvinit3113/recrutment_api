@@ -1,10 +1,10 @@
-import { IBaseEntities } from "@/data/entities/base-entities";
+import { BaseEntities } from "@/data/entities/base-entities";
 
 /**
  * Base query generator for database operations
  * @template T - Entity type that extends IBaseEntities
  */
-export class BaseQueries<T extends IBaseEntities> {
+export class BaseQueries<T extends BaseEntities> {
   private table: string;
 
   /**
@@ -45,7 +45,7 @@ export class BaseQueries<T extends IBaseEntities> {
       (k) => entity[k as keyof T] !== undefined
     );
     const placeholders = keys.map(() => "?").join(",");
-    return `INSERT INTO ${this.table} (${keys.join(
+    return `INSERT INTO '${this.table} (${keys.join(
       ","
     )}) VALUES (${placeholders})`;
   }

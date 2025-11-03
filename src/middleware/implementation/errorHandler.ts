@@ -6,6 +6,15 @@ import { ValidationError } from "../errors/validation.error";
 import { NotFoundError } from "../errors/notFound.error";
 import { UnknownError } from "../errors/unknown.error";
 
+/**
+ * Global error handling middleware
+ * Processes errors and sends appropriate responses to clients
+ *
+ * @param error Error object thrown in the application
+ * @param req Express request object
+ * @param res Express response object
+ * @param next Next middleware function
+ */
 export const errorHandler = (
   error: Error,
   req: Request,

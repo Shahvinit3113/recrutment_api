@@ -1,8 +1,7 @@
-import { IBaseEntities } from "@/data/entities/base-entities";
+import { BaseEntities } from "@/data/entities/base-entities";
 import { Filter } from "@/data/filters/filter";
 import { CallerService } from "../caller/caller.service";
 import { BaseRepository } from "@/repository/base/base.repository";
-import { BaseQueries } from "@/db/queries/base/base.query";
 import { Result } from "@/data/response/response";
 import { Utility } from "@/core/utils/common.utils";
 import { ValidationError } from "@/middleware/errors/validation.error";
@@ -18,7 +17,7 @@ import { ValidationError } from "@/middleware/errors/validation.error";
  */
 export abstract class VmService<
   TVm,
-  T extends IBaseEntities,
+  T extends BaseEntities,
   F extends Filter,
   TResult
 > {
@@ -87,13 +86,6 @@ export abstract class VmService<
    * Creates a new record in the system
    * @param model The view model containing the data for the new record
    * @returns Promise resolving to the newly created record
-   * @remarks This method follows a complete lifecycle:
-   * 1. Validates the input model
-   * 2. Converts view model to entity
-   * 3. Applies pre-creation operations (setting metadata)
-   * 4. Persists the entity
-   * 5. Applies post-creation operations
-   * 6. Transforms result for response
    */
   async createAsync(model: TVm): Promise<TResult> {
     await this.validateAdd(model);
@@ -122,12 +114,6 @@ export abstract class VmService<
    * Performs operations on the entity before it is created
    * @param model The original view model
    * @param entity The entity being created
-   * @remarks Sets default values and metadata including:
-   * - Unique identifier (UUID)
-   * - Organization ID
-   * - Creation timestamp
-   * - Created by user ID
-   * - Active status
    * Override in derived classes to add custom pre-creation logic
    */
   async preAddOperation(model: TVm, entity: T) {
@@ -158,13 +144,6 @@ export abstract class VmService<
    * @param id The unique identifier of the record to update
    * @returns Promise resolving to the updated record
    * @throws Error if the record is not found or validation fails
-   * @remarks This method follows a complete update lifecycle:
-   * 1. Validates the update model
-   * 2. Retrieves the existing entity
-   * 3. Applies pre-update operations
-   * 4. Persists the changes
-   * 5. Applies post-update operations
-   * 6. Transforms result for response
    */
   async updateAsync(model: TVm, id: string): Promise<TResult> {
     await this.validateUpdate(model);
@@ -202,9 +181,6 @@ export abstract class VmService<
    * Performs operations on the entity before it is updated
    * @param model The view model containing updated data
    * @param entity The existing entity being updated
-   * @remarks Updates metadata including:
-   * - Last modification timestamp
-   * - Modified by user ID
    * Override in derived classes to implement custom pre-update logic
    * such as handling related entities or maintaining audit trails
    */

@@ -3,6 +3,11 @@ import { Request, Response, NextFunction } from "express";
 import { validationResult } from "express-validator";
 import { UseMiddleware } from "./middleware.decorator";
 
+/**
+ * Decorator factory for validating request body data
+ * @param validations Array of express-validator validation chains
+ * @returns Method decorator that validates request body
+ */
 export function ValidateBody(validations: ValidationChain[]) {
   return function (
     target: any,

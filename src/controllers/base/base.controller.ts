@@ -1,5 +1,5 @@
 import { Delete, Get, Post, Put } from "@/core/decorators/route.decorator";
-import { IBaseEntities } from "@/data/entities/base-entities";
+import { BaseEntities } from "@/data/entities/base-entities";
 import { Filter } from "@/data/filters/filter";
 import { Response as ApiResponse } from "@/data/response/response";
 import { VmService } from "@/service/vm/vm.service";
@@ -14,7 +14,7 @@ import { Request, Response } from "express";
  */
 export abstract class BaseController<
   TVm,
-  T extends IBaseEntities,
+  T extends BaseEntities,
   F extends Filter,
   TResult
 > {

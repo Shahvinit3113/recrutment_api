@@ -2,14 +2,14 @@ import { DatabaseConnection } from "@/db/connection/connection";
 import { BaseQueries } from "@/db/queries/base/base.query";
 import { inject, injectable } from "inversify";
 import { TYPES } from "@/core/container/types";
-import { IBaseEntities } from "@/data/entities/base-entities";
+import { BaseEntities } from "@/data/entities/base-entities";
 
 /**
  * Base repository implementation providing common CRUD operations
  * @template T - Entity type that extends IBaseEntity
  */
 @injectable()
-export class BaseRepository<T extends IBaseEntities> extends BaseQueries<T> {
+export class BaseRepository<T extends BaseEntities> extends BaseQueries<T> {
   protected readonly _db: DatabaseConnection;
 
   constructor(

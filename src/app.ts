@@ -11,15 +11,6 @@ const app: Application = express();
 // Security & core middleware
 registerMiddleware(app);
 
-// Routes
-// registerRoutes(app);
-
-// 404 and error handler
-// app.use(notFound);
-
 app.use(errorHandler);
 app.use("/api", initiControllersRoutes());
-// wireProcessHandlers();
 void startServer(app);
-
-export { app };

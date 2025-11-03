@@ -6,6 +6,18 @@ import { JWT } from "@/core/utils/jwt.utils";
 import { RequestHandler } from "@/core/decorators/types";
 import { container } from "@/core/container/container";
 
+/**
+ * Authentication middleware that validates JWT tokens and sets up caller context
+ * @param req Express request object containing authorization header with Bearer token
+ * @param res Express response object
+ * @param next Next middleware function
+ * @throws UnAuthorizedError if token is missing, invalid, or expired
+ * @remarks
+ * - Extracts Bearer token from Authorization header
+ * - Validates token using JWT utility
+ * - Sets up caller context in CallerService
+ * - Supports role-based access control
+ */
 export const authenticate: RequestHandler = async (
   req: Request,
   res: Response,
