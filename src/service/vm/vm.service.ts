@@ -225,9 +225,13 @@ export abstract class VmService<
    */
   toEntity(vm: TVm): T {
     const entity = new this.entityType();
+
     for (const key in vm) {
-      (entity as any)[key] = (vm as any)[key];
+      if (key in entity) {
+        (entity as any)[key] = (vm as any)[key];
+      }
     }
+
     return entity;
   }
 
@@ -236,9 +240,11 @@ export abstract class VmService<
    * @param model The view model with updated values
    * @param entity The existing entity to update
    * @remarks Copies all properties from the model to the entity,
-   * excluding metadata fields that are managed by the system
+   * excluding metadata fields that are managed by the system,
+   * and removes any extra properties from joins
    */
   protected mergeModelToEntity(model: TVm, entity: T): void {
+    const entityPrototype = new this.entityType();
     const excludedFields = [
       "Uid",
       "OrgId",
@@ -251,9 +257,17 @@ export abstract class VmService<
       "IsDeleted",
     ];
 
+    // First, remove any properties from entity that don't belong to the entity type
+    for (const key in entity) {
+      if (!(key in entityPrototype)) {
+        delete (entity as any)[key];
+      }
+    }
+
+    // Then, merge the model properties into entity
     for (const key in model) {
-      // Skip system-managed fields
-      if (!excludedFields.includes(key)) {
+      // Skip system-managed fields AND only include fields that exist in the entity
+      if (!excludedFields.includes(key) && key in entityPrototype) {
         (entity as any)[key] = (model as any)[key];
       }
     }
