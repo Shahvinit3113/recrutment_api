@@ -1,17 +1,60 @@
-import mysql, { Pool } from "mysql2/promise";
+import mysql from "mysql2/promise";
+import type {
+  FieldPacket,
+  Pool,
+  PoolConnection,
+  QueryResult,
+} from "mysql2/promise";
 import { injectable } from "inversify";
 import { config } from "@/core/config/environment";
 
 /**
- * Manages database connections and transactions using a connection pool
- * Provides methods for query execution and transaction management
+ * Defines the contract for database connection and transaction management.
  */
-@injectable()
-export class DatabaseConnection {
-  private pool: Pool;
+export interface IDatabaseConnection {
+  /**
+   * Executes a SQL query with optional parameters.
+   * @param sql The SQL query string to execute.
+   * @param params Optional array of parameter values for the query.
+   * @returns Promise resolving to query results and field information.
+   */
+  execute(
+    sql: string,
+    params?: any[]
+  ): Promise<[mysql.QueryResult, mysql.FieldPacket[]]>;
 
   /**
-   * Initializes the database connection pool using environment configuration
+   * Begins a new database transaction.
+   */
+  beginTransaction(): Promise<void>;
+
+  /**
+   * Commits the current transaction.
+   */
+  commit(): Promise<void>;
+
+  /**
+   * Rolls back the current transaction.
+   */
+  rollback(): Promise<void>;
+
+  /**
+   * Closes the database connection pool.
+   */
+  close(): Promise<void>;
+}
+
+/**
+ * Manages database connections and transactions using a connection pool.
+ * Provides methods for query execution and transaction management.
+ */
+@injectable()
+export class DatabaseConnection implements IDatabaseConnection {
+  private pool: Pool;
+  private transactionConnection: PoolConnection | null = null;
+
+  /**
+   * Initializes the database connection pool using environment configuration.
    */
   constructor() {
     this.pool = mysql.createPool({
@@ -25,46 +68,55 @@ export class DatabaseConnection {
   }
 
   /**
-   * Executes a SQL query with optional parameters
-   * @param sql The SQL query string to execute
-   * @param params Optional array of parameter values for the query
-   * @returns Promise resolving to query results and field information
+   * Executes a SQL query with optional parameters.
+   * If a transaction is active, it uses the same connection.
    */
   async execute(
     sql: string,
     params?: any[]
-  ): Promise<[mysql.QueryResult, mysql.FieldPacket[]]> {
-    return await this.pool.query(sql, params);
+  ): Promise<[QueryResult, FieldPacket[]]> {
+    const connection = this.transactionConnection || this.pool;
+    return await connection.query(sql, params);
   }
 
   /**
-   * Begin a database transaction
+   * Begins a new database transaction.
+   * Reuses the same connection for all subsequent operations.
    */
   async beginTransaction(): Promise<void> {
-    const connection = await this.pool.getConnection();
-    await connection.beginTransaction();
+    if (this.transactionConnection) {
+      throw new Error("A transaction is already in progress.");
+    }
+    this.transactionConnection = await this.pool.getConnection();
+    await this.transactionConnection.beginTransaction();
   }
 
   /**
-   * Commit the current transaction
+   * Commits the current transaction and releases the connection.
    */
   async commit(): Promise<void> {
-    const connection = await this.pool.getConnection();
-    await connection.commit();
-    connection.release();
+    if (!this.transactionConnection) {
+      throw new Error("No transaction in progress to commit.");
+    }
+    await this.transactionConnection.commit();
+    this.transactionConnection.release();
+    this.transactionConnection = null;
   }
 
   /**
-   * Rollback the current transaction
+   * Rolls back the current transaction and releases the connection.
    */
   async rollback(): Promise<void> {
-    const connection = await this.pool.getConnection();
-    await connection.rollback();
-    connection.release();
+    if (!this.transactionConnection) {
+      throw new Error("No transaction in progress to roll back.");
+    }
+    await this.transactionConnection.rollback();
+    this.transactionConnection.release();
+    this.transactionConnection = null;
   }
 
   /**
-   * Close the database connection pool
+   * Closes the database connection pool.
    */
   async close(): Promise<void> {
     await this.pool.end();

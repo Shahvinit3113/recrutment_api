@@ -19,4 +19,14 @@ export class UserInfoService extends VmService<
   ) {
     super(_repository.UserInfo, _callerService, UserInfo);
   }
+
+  //#region Get
+  /**
+   * Get user's details
+   * @returns
+   */
+  async getUserDetails(): Promise<Result<UserInfo>> {
+    return await this.getByIdAsync(this._callerService.infoId);
+  }
+  //#endregion
 }
