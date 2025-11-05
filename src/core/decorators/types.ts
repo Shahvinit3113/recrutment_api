@@ -7,6 +7,7 @@ export interface RouteDefinition {
   method: RouteMethods;
   methodName: string;
   middlewares: RequestHandler[];
+  ignorePrefix?: boolean;
 }
 
 export interface ControllerMetadata {

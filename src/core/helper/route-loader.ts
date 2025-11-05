@@ -10,10 +10,11 @@ interface RouteInfo {
   path: string;
   handler: string;
   isPublic: boolean;
+  controllerName: string;
 }
 
 export class RouteLoader {
-  private static routesByController: Map<string, RouteInfo[]> = new Map();
+  private static allRoutes: RouteInfo[] = [];
 
   static loadRoutes(
     router: Router,
@@ -31,14 +32,12 @@ export class RouteLoader {
     const basePath = controllerMetadata.prefix;
     const controllerName = controllerClass.name;
 
-    // Initialize array for this controller
-    if (!this.routesByController.has(controllerName)) {
-      this.routesByController.set(controllerName, []);
-    }
-
     // Register routes
     routeMetadata.forEach((route) => {
-      const fullPath = basePath + route.path;
+      // Check if route should ignore controller prefix
+      const fullPath = route.ignorePrefix
+        ? route.path // Use path directly without prefix
+        : basePath + route.path; // Use prefix + path
 
       // Check if route is marked as public
       const isPublic = isPublicRoute(controllerInstance, route.methodName);
@@ -65,13 +64,21 @@ export class RouteLoader {
 
       router[route.method](fullPath, ...middlewares, handler);
 
-      // Store route info for grouped logging
-      this.routesByController.get(controllerName)!.push({
-        method: route.method.toUpperCase(),
-        path: fullPath,
-        handler: `${route.methodName}`,
-        isPublic,
-      });
+      // Store route info - only if not already registered
+      const routeKey = `${route.method.toUpperCase()}:${fullPath}`;
+      const existingRoute = this.allRoutes.find(
+        (r) => `${r.method}:${r.path}` === routeKey
+      );
+
+      if (!existingRoute) {
+        this.allRoutes.push({
+          method: route.method.toUpperCase(),
+          path: fullPath,
+          handler: route.methodName,
+          isPublic,
+          controllerName,
+        });
+      }
     });
 
     return router;
@@ -82,6 +89,9 @@ export class RouteLoader {
     controllers: any[],
     container: Container
   ): Router {
+    // Clear previous routes
+    this.allRoutes = [];
+
     controllers.forEach((controller) => {
       this.loadRoutes(router, controller, container);
     });
@@ -101,46 +111,54 @@ export class RouteLoader {
     let publicRoutes = 0;
     let protectedRoutes = 0;
 
-    // Group controllers by base path for better organization
-    const groupedControllers = this.groupControllersByPath();
+    // Group routes by their base path
+    const groupedRoutes = new Map<string, RouteInfo[]>();
 
-    groupedControllers.forEach((controllers, group) => {
-      if (group) {
-        logger.info(`\n📁 ${group.toUpperCase()} ENDPOINTS`);
-        logger.info("-".repeat(80));
+    this.allRoutes.forEach((route) => {
+      // Extract base path (e.g., /user/profile -> user)
+      const pathParts = route.path.split("/").filter((p) => p.length > 0);
+      const basePath = pathParts[0] || "root";
+
+      if (!groupedRoutes.has(basePath)) {
+        groupedRoutes.set(basePath, []);
       }
+      groupedRoutes.get(basePath)!.push(route);
+    });
 
-      controllers.forEach((controllerName) => {
-        const routes = this.routesByController.get(controllerName) || [];
+    // Sort groups alphabetically
+    const sortedGroups = Array.from(groupedRoutes.entries()).sort((a, b) =>
+      a[0].localeCompare(b[0])
+    );
 
-        // Sort routes by method and path for consistency
-        const sortedRoutes = routes.sort((a, b) => {
-          if (a.method !== b.method) {
-            return (
-              this.getMethodOrder(a.method) - this.getMethodOrder(b.method)
-            );
-          }
-          return a.path.localeCompare(b.path);
-        });
+    sortedGroups.forEach(([group, routes]) => {
+      logger.info(`\n📁 ${group.toUpperCase()} ENDPOINTS`);
+      logger.info("-".repeat(80));
 
-        sortedRoutes.forEach((route) => {
-          const methodColor = this.getMethodColor(route.method);
-          const accessBadge = route.isPublic ? "🔓 PUBLIC" : "🔒 PROTECTED";
-          const methodPadded = route.method.padEnd(6);
+      // Sort routes within group: by method order, then by path
+      const sortedRoutes = routes.sort((a, b) => {
+        if (a.method !== b.method) {
+          return this.getMethodOrder(a.method) - this.getMethodOrder(b.method);
+        }
+        return a.path.localeCompare(b.path);
+      });
 
-          logger.info(
-            `     ${methodColor} ${methodPadded} ${route.path.padEnd(30)} → ${
-              route.handler
-            } [${accessBadge}]`
-          );
+      sortedRoutes.forEach((route) => {
+        const methodColor = this.getMethodColor(route.method);
+        const accessBadge = route.isPublic ? "🔓 PUBLIC" : "🔒 PROTECTED";
+        const methodPadded = route.method.padEnd(6);
 
-          totalRoutes++;
-          if (route.isPublic) {
-            publicRoutes++;
-          } else {
-            protectedRoutes++;
-          }
-        });
+        logger.info(
+          `     ${methodColor} ${methodPadded} ${route.path.padEnd(30)} → ${
+            route.handler
+          } [${accessBadge}]`
+        );
+
+        totalRoutes++;
+        if (route.isPublic) {
+          publicRoutes++;
+        } else {
+          protectedRoutes++;
+        }
       });
     });
 
@@ -151,26 +169,8 @@ export class RouteLoader {
     logger.info(`   Total Routes: ${totalRoutes}`);
     logger.info(`   🔓 Public Routes: ${publicRoutes}`);
     logger.info(`   🔒 Protected Routes: ${protectedRoutes}`);
-    logger.info(`   📦 Controllers: ${this.routesByController.size}`);
+    logger.info(`   📦 Controllers: ${groupedRoutes.size}`);
     logger.info("=".repeat(80) + "\n");
-  }
-
-  private static groupControllersByPath(): Map<string, string[]> {
-    const grouped = new Map<string, string[]>();
-
-    this.routesByController.forEach((routes, controllerName) => {
-      if (routes.length === 0) return;
-
-      // Extract base path from first route (e.g., /user, /task, /auth)
-      const basePath = routes[0].path.split("/")[1] || "root";
-
-      if (!grouped.has(basePath)) {
-        grouped.set(basePath, []);
-      }
-      grouped.get(basePath)!.push(controllerName);
-    });
-
-    return grouped;
   }
 
   private static getMethodColor(method: string): string {

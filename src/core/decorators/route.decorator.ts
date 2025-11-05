@@ -13,20 +13,31 @@ function createRouteDecorator(method: RouteMethods) {
    * Route decorator function
    * @param path Optional URL path for the route
    * @param middlewares Optional array of middleware handlers
+   * @param options Optional configuration for the route
    */
-  return function (path: string = "", middlewares: RequestHandler[] = []) {
+  return function (
+    path: string = "",
+    middlewares: RequestHandler[] = [],
+    options?: { ignorePrefix?: boolean }
+  ) {
     return function (
       target: any,
       propertyKey: string,
       descriptor: PropertyDescriptor
     ) {
-      if (!Reflect.hasMetadata(ROUTES_METADATA, target.constructor)) {
-        Reflect.defineMetadata(ROUTES_METADATA, [], target.constructor);
+      const ctor = target.constructor;
+
+      // Check if this specific class has its own metadata storage
+      // Use hasOwnMetadata to check only this class, not inherited
+      if (!Reflect.hasOwnMetadata(ROUTES_METADATA, ctor)) {
+        // Initialize with empty array for this specific class
+        Reflect.defineMetadata(ROUTES_METADATA, [], ctor);
       }
 
-      const routes: RouteDefinition[] = Reflect.getMetadata(
+      // Get only the routes defined on this specific class
+      const routes: RouteDefinition[] = Reflect.getOwnMetadata(
         ROUTES_METADATA,
-        target.constructor
+        ctor
       );
 
       routes.push({
@@ -34,15 +45,32 @@ function createRouteDecorator(method: RouteMethods) {
         path: path.startsWith("/") ? path : `/${path}`,
         methodName: propertyKey,
         middlewares,
+        ignorePrefix: options?.ignorePrefix || false, // Add flag to ignore controller prefix
       });
 
-      Reflect.defineMetadata(ROUTES_METADATA, routes, target.constructor);
+      // Store back on this specific class
+      Reflect.defineMetadata(ROUTES_METADATA, routes, ctor);
     };
   };
 }
 
 export function getRouteMetadata(constructor: any): RouteDefinition[] {
-  return Reflect.getMetadata(ROUTES_METADATA, constructor) || [];
+  const ownRoutes = Reflect.getOwnMetadata(ROUTES_METADATA, constructor) || [];
+  const parentRoutes = [];
+
+  // Walk up the prototype chain to collect parent routes
+  let parent = Object.getPrototypeOf(constructor);
+  while (parent && parent.name) {
+    const parentMeta = Reflect.getOwnMetadata(ROUTES_METADATA, parent);
+    if (parentMeta) {
+      parentRoutes.push(...parentMeta);
+    }
+    parent = Object.getPrototypeOf(parent);
+  }
+
+  // Return parent routes first, then child routes
+  // This ensures base CRUD routes come first, then specific routes
+  return [...parentRoutes, ...ownRoutes];
 }
 
 export const Get = createRouteDecorator("get");
