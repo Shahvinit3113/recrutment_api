@@ -33,4 +33,27 @@ export class AuthController {
       )
     );
   }
+
+  @Public()
+  @Post("/refresh")
+  async refreshToken(
+    req: Request<
+      any,
+      any,
+      {
+        RefreshToken: string;
+      },
+      any
+    >,
+    res: Response<ApiResponse<AuthResult>>
+  ) {
+    return res.send(
+      new ApiResponse(
+        true,
+        200,
+        "Success",
+        await this._authService.refreshToken(req.body?.RefreshToken)
+      )
+    );
+  }
 }

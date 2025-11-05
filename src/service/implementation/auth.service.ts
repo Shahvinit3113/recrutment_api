@@ -16,6 +16,7 @@ export class AuthService {
     this._repository = _repository;
   }
 
+  //#region Login
   /**
    * Authenticates a user and generates access tokens
    * @param loginCredentials User's login credentials containing email and password
@@ -27,9 +28,12 @@ export class AuthService {
   async loginUser(loginCredentials: LoginRequest) {
     this.validateCredentials(loginCredentials);
 
-    const user = await this._repository.User.getByEmail(loginCredentials.Email);
+    const [user, userInfo] = await Promise.all([
+      this._repository.User.getByEmail(loginCredentials.Email),
+      this._repository.UserInfo.getByEmail(loginCredentials.Email),
+    ]);
 
-    if (!user || typeof user == "undefined") {
+    if (!user || !userInfo) {
       throw new NotFoundError("User not found");
     }
 
@@ -47,6 +51,7 @@ export class AuthService {
       Email: user.Email,
       Role: user.Role,
       TenantId: user.OrgId,
+      InfoId: userInfo?.Uid,
     });
 
     return new AuthResult({
@@ -54,13 +59,63 @@ export class AuthService {
       RefreshToken: response.RefreshToken,
     });
   }
+  //#endregion
 
+  //#region Refresh Token
+  /**
+   *
+   * @param refreahToken
+   * @returns
+   */
+  async refreshToken(refreahToken: string) {
+    if (!refreahToken || !refreahToken?.length) {
+      throw new ValidationError("RefreshToken is required");
+    }
+
+    const decodedData = JWT.decode(refreahToken);
+
+    if (!decodedData?.Payload) {
+      throw new ValidationError("Invalid RefreshToken");
+    }
+
+    const [user, userInfo] = await Promise.all([
+      this._repository.User.getById(decodedData.Payload.UserId, [
+        decodedData.Payload.TenantId,
+      ]),
+      this._repository.UserInfo.getById(decodedData.Payload.InfoId, [
+        decodedData.Payload.TenantId,
+      ]),
+    ]);
+
+    if (!user || !userInfo) {
+      throw new ValidationError("User not found");
+    }
+
+    const accessToken = JWT.encode({
+      UserId: user.Uid,
+      Email: user.Email,
+      Role: user.Role,
+      TenantId: user.OrgId,
+      InfoId: userInfo?.Uid,
+    });
+
+    return new AuthResult({
+      AccessToken: accessToken,
+      RefreshToken: refreahToken,
+    });
+  }
+  //#endregion
+
+  //#region Private Functions
   /**
    * Validates the presence of required login credentials
    * @param loginCredentials Object containing email and password
    * @throws ValidationError if email or password is missing
    */
-  validateCredentials(loginCredentials: { Email: string; Password: string }) {
+  private validateCredentials(loginCredentials: {
+    Email: string;
+    Password: string;
+  }) {
     if (!loginCredentials?.Email && !loginCredentials?.Email?.length) {
       throw new ValidationError("Email is required");
     }
@@ -69,4 +124,5 @@ export class AuthService {
       throw new ValidationError("Password is required");
     }
   }
+  //#endregion
 }

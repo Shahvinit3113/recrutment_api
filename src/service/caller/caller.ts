@@ -5,6 +5,7 @@ export class Caller {
   Email: string;
   Role: Role;
   TenantId: string;
+  InfoId: string;
 
   constructor(caller?: Caller) {
     if (caller) {
@@ -12,6 +13,7 @@ export class Caller {
       this.Email = caller.Email;
       this.Role = caller.Role;
       this.TenantId = caller.TenantId;
+      this.InfoId = caller.InfoId;
     }
   }
 }
