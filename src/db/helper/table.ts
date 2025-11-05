@@ -1,6 +1,6 @@
 export const Tables = {
   User: "Users",
-  UserInfo: "userinfo",
+  UserInfo: "UserInfo",
   Task: "Task",
   Positions: "Positions",
   Organization: "Organization",

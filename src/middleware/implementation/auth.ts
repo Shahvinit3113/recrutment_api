@@ -45,13 +45,18 @@ export const authenticate: RequestHandler = async (
 
     const user = decodeResult.Payload;
 
+    if (!user) {
+      throw new UnAuthorizedError("Invalid Access token");
+    }
+
     const _callerService = container.get<CallerService>(TYPES.Caller);
 
     _callerService.setCaller({
-      Role: user?.Role!,
-      Email: user?.Email!,
-      UserId: user?.UserId!,
-      TenantId: user?.TenantId!,
+      Role: user.Role!,
+      Email: user.Email!,
+      UserId: user.UserId!,
+      TenantId: user.TenantId!,
+      InfoId: user.InfoId,
     });
 
     next();

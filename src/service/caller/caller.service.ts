@@ -16,6 +16,7 @@ export class CallerService {
       UserId: caller.UserId,
       Role: caller.Role,
       TenantId: caller.TenantId,
+      InfoId: caller.InfoId,
     });
   }
 
@@ -25,6 +26,7 @@ export class CallerService {
       Role: Role.Employee,
       UserId: "0000",
       TenantId: "0000",
+      InfoId: "0000",
     });
   }
 
@@ -46,5 +48,9 @@ export class CallerService {
 
   get _caller() {
     return this.caller;
+  }
+
+  get infoId() {
+    return this._caller.InfoId;
   }
 }

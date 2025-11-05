@@ -7,6 +7,7 @@ interface JWTPayload {
   Email: string;
   Role: Role;
   TenantId: string;
+  InfoId: string;
 }
 
 interface JWTOptions {
