@@ -11,6 +11,8 @@ export const TYPES = {
   OrganizationService: Symbol.for("OrganizationService"),
   DepartmentService: Symbol.for("DepartmentService"),
   FormTemplateService: Symbol.for("FormTemplateService"),
+  FormSectionService: Symbol.for("FormSectionService"),
+  FormFieldService: Symbol.for("FormFieldService"),
 
   // Repository
   Repository: Symbol.for("Repository"),

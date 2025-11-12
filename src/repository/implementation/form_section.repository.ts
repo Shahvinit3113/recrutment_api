@@ -1,10 +1,10 @@
-import { FormTemplate } from "@/data/entities/form_template";
+import { FormSection } from "@/data/entities/form_section";
 import { BaseRepository } from "../base/base.repository";
 import { DatabaseConnection } from "@/db/connection/connection";
 import { Tables } from "@/db/helper/table";
 
-export class FormTemplateRepository extends BaseRepository<FormTemplate> {
+export class FormSectionRepository extends BaseRepository<FormSection> {
   constructor(db: DatabaseConnection) {
-    super(db, Tables.FormTemplate);
+    super(db, Tables.FormSection);
   }
 }

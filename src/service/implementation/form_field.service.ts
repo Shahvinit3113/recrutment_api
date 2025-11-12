@@ -1,23 +1,23 @@
-import { FormTemplate } from "@/data/entities/form_template";
+import { inject, injectable } from "inversify";
 import { VmService } from "../vm/vm.service";
+import { FormField } from "@/data/entities/form_field";
 import { Filter } from "@/data/filters/filter";
 import { Result } from "@/data/response/response";
-import { inject, injectable } from "inversify";
 import { TYPES } from "@/core/container/types";
 import { Repository } from "@/repository/base/repository";
 import { CallerService } from "../caller/caller.service";
 
-@injectable()
-export class FormTemplateService extends VmService<
-  FormTemplate,
-  FormTemplate,
+injectable();
+export class FormFieldService extends VmService<
+  FormField,
+  FormField,
   Filter,
-  Result<FormTemplate>
+  Result<FormField>
 > {
   constructor(
     @inject(TYPES.Repository) repository: Repository,
     @inject(TYPES.Caller) callerService: CallerService
   ) {
-    super(repository.FormTemplate, callerService, FormTemplate);
+    super(repository.FormField, callerService, FormField);
   }
 }
