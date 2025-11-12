@@ -1,12 +1,13 @@
 import { UserInfo } from "@/data/entities/user-info";
 import { VmService } from "../vm/vm.service";
 import { Filter } from "@/data/filters/filter";
-import { inject } from "inversify";
+import { inject, injectable } from "inversify";
 import { TYPES } from "@/core/container/types";
 import { Repository } from "@/repository/base/repository";
 import { CallerService } from "../caller/caller.service";
 import { Result } from "@/data/response/response";
 
+@injectable()
 export class UserInfoService extends VmService<
   UserInfo,
   UserInfo,

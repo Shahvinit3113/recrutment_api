@@ -19,6 +19,8 @@ import { OrganizationService } from "@/service/implementation/organization.servi
 import { OrganizationController } from "@/controllers/implementation/organization.controller";
 import { DepartmentService } from "@/service/implementation/department.service";
 import { DepartmentController } from "@/controllers/implementation/department.controller";
+import { FormTemplateController } from "@/controllers/implementation/form_template.controller";
+import { FormTemplateService } from "@/service/implementation/form_template.service";
 
 const container = new Container({ defaultScope: "Singleton" });
 
@@ -50,6 +52,10 @@ container
 container
   .bind<DepartmentService>(TYPES.DepartmentService)
   .to(DepartmentService)
+  .inRequestScope();
+container
+  .bind<FormTemplateService>(TYPES.FormTemplateService)
+  .to(FormTemplateService)
   .inRequestScope();
 
 container
@@ -86,6 +92,10 @@ container
 container
   .bind<DepartmentController>(DepartmentController)
   .to(DepartmentController)
+  .inRequestScope();
+container
+  .bind<FormTemplateController>(FormTemplateController)
+  .to(FormTemplateController)
   .inRequestScope();
 
 export { container };

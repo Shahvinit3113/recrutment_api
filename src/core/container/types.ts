@@ -10,6 +10,7 @@ export const TYPES = {
   PositionsService: Symbol.for("PositionsService"),
   OrganizationService: Symbol.for("OrganizationService"),
   DepartmentService: Symbol.for("DepartmentService"),
+  FormTemplateService: Symbol.for("FormTemplateService"),
 
   // Repository
   Repository: Symbol.for("Repository"),

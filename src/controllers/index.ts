@@ -8,6 +8,7 @@ import { TaskController } from "./implementation/task.controller";
 import { PositionsController } from "./implementation/positions.controller";
 import { OrganizationController } from "./implementation/organization.controller";
 import { DepartmentController } from "./implementation/department.controller";
+import { FormTemplateController } from "./implementation/form_template.controller";
 
 export function initiControllersRoutes() {
   const router = Router();
@@ -21,6 +22,7 @@ export function initiControllersRoutes() {
       PositionsController,
       OrganizationController,
       DepartmentController,
+      FormTemplateController,
     ],
     container
   );
