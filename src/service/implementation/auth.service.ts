@@ -7,8 +7,9 @@ import { NotFoundError } from "@/middleware/errors/notFound.error";
 import { UnAuthorizedError } from "@/middleware/errors/unauthorized.error.";
 import { ValidationError } from "@/middleware/errors/validation.error";
 import { Repository } from "@/repository/base/repository";
-import { inject } from "inversify";
+import { inject, injectable } from "inversify";
 
+@injectable()
 export class AuthService {
   private readonly _repository: Repository;
 

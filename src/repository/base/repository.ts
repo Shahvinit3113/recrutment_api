@@ -7,6 +7,7 @@ import { UserRepository } from "../implementation/user.repository";
 import { PositionsRepository } from "../implementation/positions.repository";
 import { OrganizationRepository } from "../implementation/organization.repository";
 import { DepartmentRepository } from "../implementation/department.repository";
+import { FormTemplateRepository } from "../implementation/form_template.repository";
 
 /**
  * Central repository factory that provides access to all domain-specific repositories
@@ -20,6 +21,7 @@ export class Repository {
   public readonly Positions: PositionsRepository;
   public readonly Organization: OrganizationRepository;
   public readonly Department: DepartmentRepository;
+  public readonly FormTemplate: FormTemplateRepository;
 
   /**
    * Initializes all repositories with a shared database connection
@@ -34,5 +36,6 @@ export class Repository {
     this.Positions = new PositionsRepository(dbConnection);
     this.Organization = new OrganizationRepository(dbConnection);
     this.Department = new DepartmentRepository(dbConnection);
+    this.FormTemplate = new FormTemplateRepository(dbConnection);
   }
 }

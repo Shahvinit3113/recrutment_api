@@ -4,9 +4,10 @@ import { Filter } from "@/data/filters/filter";
 import { Result } from "@/data/response/response";
 import { TYPES } from "@/core/container/types";
 import { Repository } from "@/repository/base/repository";
-import { inject } from "inversify";
+import { inject, injectable } from "inversify";
 import { CallerService } from "../caller/caller.service";
 
+@injectable()
 export class DepartmentService extends VmService<
   Department,
   Department,
