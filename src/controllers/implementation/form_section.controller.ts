@@ -7,18 +7,20 @@ import { controller } from "@/core/decorators/controller.decorator";
 import { authenticate } from "@/middleware/implementation/auth";
 import { TYPES } from "@/core/container/types";
 import { FormTemplateService } from "@/service/implementation/form_template.service";
+import { FormSection } from "@/data/entities/form_section";
+import { FormSectionService } from "@/service/implementation/form_section.service";
 
 @injectable()
-@controller("/formTemplate", [authenticate])
-export class FormTemplateController extends BaseController<
-  FormTemplate,
-  FormTemplate,
+@controller("/formSection", [authenticate])
+export class FormSectionController extends BaseController<
+  FormSection,
+  FormSection,
   Filter,
-  Result<FormTemplate>
+  Result<FormSection>
 > {
   constructor(
-    @inject(TYPES.FormTemplateService) formTemplateService: FormTemplateService
+    @inject(TYPES.FormSectionService) formSectionService: FormSectionService
   ) {
-    super(formTemplateService);
+    super(formSectionService);
   }
 }

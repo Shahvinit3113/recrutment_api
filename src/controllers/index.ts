@@ -9,6 +9,8 @@ import { PositionsController } from "./implementation/positions.controller";
 import { OrganizationController } from "./implementation/organization.controller";
 import { DepartmentController } from "./implementation/department.controller";
 import { FormTemplateController } from "./implementation/form_template.controller";
+import { FormSectionController } from "./implementation/form_section.controller";
+import { FormFieldController } from "./implementation/form_field.controller";
 
 export function initiControllersRoutes() {
   const router = Router();
@@ -23,6 +25,8 @@ export function initiControllersRoutes() {
       OrganizationController,
       DepartmentController,
       FormTemplateController,
+      FormSectionController,
+      FormFieldController,
     ],
     container
   );

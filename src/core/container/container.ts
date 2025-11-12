@@ -21,6 +21,10 @@ import { DepartmentService } from "@/service/implementation/department.service";
 import { DepartmentController } from "@/controllers/implementation/department.controller";
 import { FormTemplateController } from "@/controllers/implementation/form_template.controller";
 import { FormTemplateService } from "@/service/implementation/form_template.service";
+import { FormSectionService } from "@/service/implementation/form_section.service";
+import { FormFieldService } from "@/service/implementation/form_field.service";
+import { FormSectionController } from "@/controllers/implementation/form_section.controller";
+import { FormFieldController } from "@/controllers/implementation/form_field.controller";
 
 const container = new Container({ defaultScope: "Singleton" });
 
@@ -56,6 +60,14 @@ container
 container
   .bind<FormTemplateService>(TYPES.FormTemplateService)
   .to(FormTemplateService)
+  .inRequestScope();
+container
+  .bind<FormSectionService>(TYPES.FormSectionService)
+  .to(FormSectionService)
+  .inRequestScope();
+container
+  .bind<FormFieldService>(TYPES.FormFieldService)
+  .to(FormFieldService)
   .inRequestScope();
 
 container
@@ -96,6 +108,14 @@ container
 container
   .bind<FormTemplateController>(FormTemplateController)
   .to(FormTemplateController)
+  .inRequestScope();
+container
+  .bind<FormSectionController>(FormSectionController)
+  .to(FormSectionController)
+  .inRequestScope();
+container
+  .bind<FormFieldController>(FormFieldController)
+  .to(FormFieldController)
   .inRequestScope();
 
 export { container };
