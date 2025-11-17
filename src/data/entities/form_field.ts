@@ -13,7 +13,7 @@ export class FormField extends BaseEntities {
   MinLength: number | null = null;
   MaxLength: number | null = null;
   Pattern: string | null = null;
-  Order: number = 0;
+  SortOrder: number = 0;
   IsVisible: boolean = true;
   Width: number = 100;
 }
