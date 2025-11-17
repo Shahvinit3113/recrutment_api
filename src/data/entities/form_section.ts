@@ -5,5 +5,5 @@ export class FormSection extends BaseEntities {
   Name: string = "";
   Description: string | null = null;
   ShowTitle: boolean = true;
-  Order: number = 0;
+  SortOrder: number = 0;
 }
