@@ -45,16 +45,30 @@ export abstract class VmService<
   /**
    * Retrieves all records for the current organization
    * @param columns Optional array of specific columns to retrieve
+   * @param filter Optional filter with pagination parameters
    * @returns Promise resolving to a paged result containing all matching records
    * @remarks This method automatically filters by the current tenant ID and
    * transforms the database entities into the appropriate result type
    */
-  async getAllAsync(columns?: (keyof T)[]): Promise<TResult> {
+  async getAllAsync(columns?: (keyof T)[], filter?: F): Promise<TResult> {
+    const params = [this._callerService.tenantId];
+
+    // Get the records with pagination
+    const records = await this._repository.getAll(params, columns, filter);
+
+    // Get total count for pagination metadata
+    const [countResult] = await this._repository.count(params) as any;
+    const totalRecords = countResult?.TotalRecords || 0;
+
+    // Extract page and pageSize from filter, with defaults
+    const page = filter?.Page || 1;
+    const pageSize = filter?.PageSize || 20;
+
     return Result.toPagedResult(
-      1,
-      1,
-      1,
-      await this._repository.getAll([this._callerService.tenantId], columns)
+      page,
+      pageSize,
+      totalRecords,
+      records
     ) as TResult;
   }
 
@@ -108,7 +122,7 @@ export abstract class VmService<
    * @remarks Override this method in derived classes to implement
    * specific validation rules for entity creation
    */
-  async validateAdd(entity: TVm) {}
+  async validateAdd(entity: TVm) { }
 
   /**
    * Performs operations on the entity before it is created
@@ -133,7 +147,7 @@ export abstract class VmService<
    * additional operations that need to be performed after entity creation,
    * such as creating related records or triggering events
    */
-  async postAddOperation(entity: TVm, model: T) {}
+  async postAddOperation(entity: TVm, model: T) { }
 
   //#endregion
 
@@ -175,7 +189,7 @@ export abstract class VmService<
    * specific validation rules for entity updates, such as
    * checking for concurrent modifications or business rule violations
    */
-  async validateUpdate(entity: TVm) {}
+  async validateUpdate(entity: TVm) { }
 
   /**
    * Performs operations on the entity before it is updated
@@ -201,7 +215,7 @@ export abstract class VmService<
    * additional operations after update, such as updating related records,
    * triggering notifications, or maintaining cache consistency
    */
-  async postUpdateOperation(entity: TVm, model: T) {}
+  async postUpdateOperation(entity: TVm, model: T) { }
 
   //#endregion
 
@@ -245,7 +259,7 @@ export abstract class VmService<
    */
   protected mergeModelToEntity(model: TVm, entity: T): void {
     const entityPrototype = new this.entityType();
-    const excludedFields = [
+    const excludedFields: (keyof BaseEntities)[] = [
       "Uid",
       "OrgId",
       "CreatedOn",
@@ -253,8 +267,8 @@ export abstract class VmService<
       "UpdatedOn",
       "UpdatedBy",
       "DeletedOn",
-      "DeletedBy",
       "IsDeleted",
+      "IsActive"
     ];
 
     // First, remove any properties from entity that don't belong to the entity type
@@ -267,7 +281,7 @@ export abstract class VmService<
     // Then, merge the model properties into entity
     for (const key in model) {
       // Skip system-managed fields AND only include fields that exist in the entity
-      if (!excludedFields.includes(key) && key in entityPrototype) {
+      if (!excludedFields.includes(key as keyof BaseEntities) && key in entityPrototype) {
         (entity as any)[key] = (model as any)[key];
       }
     }

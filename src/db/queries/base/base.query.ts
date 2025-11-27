@@ -1,4 +1,5 @@
 import { BaseEntities } from "@/data/entities/base-entities";
+import { Filter } from "@/data/filters/filter";
 
 /**
  * Base query generator for database operations
@@ -18,11 +19,56 @@ export class BaseQueries<T extends BaseEntities> {
   /**
    * Generates a query to select all active records for an organization
    * @param columns Optional array of column names to select
+   * @param filter Optional filter object with pagination and sorting
    * @returns SQL query string
    */
-  seletAllQuery(columns?: (keyof T)[]): string {
-    const fields = columns?.length ? columns.join(", ") : "*";
-    return `SELECT ${fields} FROM ${this.table} WHERE IsDeleted = 0 AND OrgId = ?`;
+  seletAllQuery(columns?: (keyof T)[], filter?: Filter): string {
+    const fields = this.buildFieldSelection(columns);
+    let query = `SELECT ${fields} FROM ${this.table} WHERE IsDeleted = 0 AND OrgId = ?`;
+
+    // Add sorting if specified in filter
+    if (filter?.SortBy) {
+      const sortOrder = filter.SortOrder || "DESC";
+      query += ` ORDER BY ${filter.SortBy} ${sortOrder}`;
+    }
+
+    // Add pagination if specified in filter
+    if (filter?.Page && filter?.PageSize) {
+      query += this.buildPaginationClause(filter);
+    }
+
+    return query;
+  }
+
+  /**
+   * Build field selection clause
+   * @param columns Optional array of column names
+   * @returns Comma-separated field names or *
+   */
+  protected buildFieldSelection(columns?: (keyof T)[]): string {
+    return columns?.length ? columns.join(", ") : "*";
+  }
+
+
+
+  /**
+   * Build pagination clause with LIMIT and OFFSET
+   * @param filter Filter object with Page and PageSize
+   * @returns SQL LIMIT OFFSET clause
+   */
+  protected buildPaginationClause(filter: Filter): string {
+    const page = filter.Page || 1;
+    const pageSize = Math.min(filter.PageSize || 20, 100); // Max 100 records
+    const offset = (page - 1) * pageSize;
+    return ` LIMIT ${pageSize} OFFSET ${offset}`;
+  }
+
+  /**
+   * Generates a query to count total records for pagination
+   * @returns SQL query string for counting records
+   */
+  countQuery(): string {
+    return `SELECT COUNT(*) as TotalRecords FROM ${this.table} WHERE IsDeleted = 0 AND OrgId = ?`;
   }
 
   /**
@@ -31,7 +77,7 @@ export class BaseQueries<T extends BaseEntities> {
    * @returns SQL query string
    */
   selectByIdQuery(columns?: (keyof T)[]): string {
-    const fields = columns?.length ? columns.join(", ") : "*";
+    const fields = this.buildFieldSelection(columns);
     return `SELECT ${fields} FROM ${this.table} WHERE Uid = ? AND OrgId = ? AND IsDeleted = 0`;
   }
 

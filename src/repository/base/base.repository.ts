@@ -3,6 +3,7 @@ import { BaseQueries } from "@/db/queries/base/base.query";
 import { inject, injectable } from "inversify";
 import { TYPES } from "@/core/container/types";
 import { BaseEntities } from "@/data/entities/base-entities";
+import { Filter } from "@/data/filters/filter";
 
 /**
  * Base repository implementation providing common CRUD operations
@@ -26,8 +27,15 @@ export class BaseRepository<T extends BaseEntities> extends BaseQueries<T> {
    * @param columns Optional array of column names to select
    * @returns Promise resolving to array of entities
    */
-  async getAll(params: any[], columns?: (keyof T)[]): Promise<T[]> {
-    const [rows] = await this._db.execute(this.seletAllQuery(columns), params);
+  async getAll(
+    params: any[],
+    columns?: (keyof T)[],
+    filter?: Filter
+  ): Promise<T[]> {
+    const [rows] = await this._db.execute(
+      this.seletAllQuery(columns, filter),
+      params
+    );
     return rows as T[];
   }
 
@@ -49,6 +57,16 @@ export class BaseRepository<T extends BaseEntities> extends BaseQueries<T> {
     ]);
     const result = (rows as T[])[0];
     return result || null;
+  }
+
+  /**
+   * Gets the total count of records for pagination
+   * @param params Array of parameters including organization ID
+   * @returns Promise resolving to count result
+   */
+  async count(params: any[]): Promise<{ TotalRecords: number }[]> {
+    const [rows] = await this._db.execute(this.countQuery(), params);
+    return rows as { TotalRecords: number }[];
   }
 
   /**

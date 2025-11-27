@@ -40,7 +40,12 @@ export abstract class BaseController<
     res: Response<ApiResponse<TResult>>
   ) {
     return res.send(
-      new ApiResponse(true, 200, "Success", await this._service.getAllAsync())
+      new ApiResponse(
+        true,
+        200,
+        "Success",
+        await this._service.getAllAsync(undefined, req.body)
+      )
     );
   }
 

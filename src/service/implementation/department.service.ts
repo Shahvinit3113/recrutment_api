@@ -20,4 +20,30 @@ export class DepartmentService extends VmService<
   ) {
     super(repository.Department, callerService, Department);
   }
+
+  /**
+   * Get all department records as filtered
+   * @param columns
+   * @param filter
+   * @returns
+   */
+  override async getAllAsync(
+    columns?: (keyof Department)[] | undefined,
+    filter?: Filter | undefined
+  ): Promise<Result<Department>> {
+    const [contentResult] = await this._repository.count([
+      this._callerService.tenantId,
+    ]);
+
+    return Result.toPagedResult(
+      filter?.Page || 1,
+      filter?.PageSize || 20,
+      contentResult.TotalRecords,
+      await this._repository.getAll(
+        [this._callerService.tenantId],
+        ["Uid", "Name", "Description"],
+        filter
+      )
+    );
+  }
 }

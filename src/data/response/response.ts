@@ -55,4 +55,29 @@ export class PagedResult<T> {
     this.TotalRecords = totalRecords;
     this.Records = result;
   }
+
+  /**
+   * Calculate total pages based on total records and page size
+   * @returns Total number of pages
+   */
+  getTotalPages(): number {
+    if (this.PageSize <= 0) return 0;
+    return Math.ceil(this.TotalRecords / this.PageSize);
+  }
+
+  /**
+   * Check if there is a next page
+   * @returns true if next page exists
+   */
+  hasNextPage(): boolean {
+    return this.PageIndex < this.getTotalPages();
+  }
+
+  /**
+   * Check if there is a previous page
+   * @returns true if previous page exists
+   */
+  hasPreviousPage(): boolean {
+    return this.PageIndex > 1;
+  }
 }
