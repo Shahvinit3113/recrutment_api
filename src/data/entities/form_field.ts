@@ -2,7 +2,7 @@ import { BaseEntities } from "./base-entities";
 
 export class FormField extends BaseEntities {
   FormSectionId: string = "";
-  Lable: string = "";
+  Label: string = "";
   Name: string = "";
   Placeholder: string | null = null;
   Type: string = "";

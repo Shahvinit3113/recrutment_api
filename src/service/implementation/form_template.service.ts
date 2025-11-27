@@ -6,13 +6,14 @@ import { inject, injectable } from "inversify";
 import { TYPES } from "@/core/container/types";
 import { Repository } from "@/repository/base/repository";
 import { CallerService } from "../caller/caller.service";
+import { FormTemplateResult } from "@/data/results/form_template_result";
 
 @injectable()
 export class FormTemplateService extends VmService<
   FormTemplate,
   FormTemplate,
   Filter,
-  Result<FormTemplate>
+  Result<FormTemplateResult>
 > {
   constructor(
     @inject(TYPES.Repository) repository: Repository,

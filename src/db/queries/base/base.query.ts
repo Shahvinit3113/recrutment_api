@@ -51,6 +51,29 @@ export class BaseQueries<T extends BaseEntities> {
   }
 
   /**
+   * Generates a bulk insert query for multiple records
+   * @param entities Array of entities to be inserted
+   * @returns SQL query string
+   */
+  insertManyQuery(entities: T[]): string {
+    if (!entities.length) {
+      throw new Error("Cannot generate insert query for empty array");
+    }
+
+    const keys = Object.keys(entities[0]).filter(
+      (k) => entities[0][k as keyof T] !== undefined
+    );
+
+    const valuePlaceholders = entities
+      .map(() => `(${keys.map(() => "?").join(",")})`)
+      .join(",");
+
+    return `INSERT INTO ${this.table} (${keys.join(
+      ","
+    )}) VALUES ${valuePlaceholders}`;
+  }
+
+  /**
    * Generates an update query for an existing record
    * @param entity Entity with updated values
    * @returns SQL query string
@@ -61,6 +84,78 @@ export class BaseQueries<T extends BaseEntities> {
     );
     const setClause = keys.map((k) => `${k} = ?`).join(",");
     return `UPDATE ${this.table} SET ${setClause} WHERE Uid = ?`;
+  }
+
+  /**
+   * Generates a bulk update query using CASE statements
+   * @param entities Array of entities with updated values
+   * @param excludeFields Optional array of field names to exclude from update (Uid is always excluded)
+   * @returns SQL query string
+   */
+  updateManyQuery(entities: T[], excludeFields?: (keyof T)[]): string {
+    if (!entities.length) {
+      throw new Error("Cannot generate update query for empty array");
+    }
+
+    const allFields = Object.keys(entities[0]) as (keyof T)[];
+    const fieldsToExclude = new Set([
+      ...(excludeFields || []),
+      "Uid" as keyof T,
+    ]);
+    const fields = allFields.filter((field) => !fieldsToExclude.has(field));
+
+    const caseStatements = fields.map((field) => {
+      const cases = entities.map(() => "WHEN Uid = ? THEN ?").join(" ");
+      return `${String(field)} = CASE ${cases} ELSE ${String(field)} END`;
+    });
+
+    const uids = entities.map(() => "?").join(",");
+
+    return `UPDATE ${this.table} SET ${caseStatements.join(
+      ", "
+    )} WHERE Uid IN (${uids})`;
+  }
+
+  /**
+   * Generates a bulk upsert query for multiple records
+   * @param entities Array of entities to upsert
+   * @param uniqueKey The unique constraint column (defaults to 'Uid')
+   * @param excludeFromUpdate Optional array of fields to exclude from update clause
+   * @returns SQL query string
+   */
+  upsertManyQuery(
+    entities: T[],
+    uniqueKey: keyof T = "Uid" as keyof T,
+    excludeFromUpdate?: (keyof T)[]
+  ): string {
+    if (!entities.length) {
+      throw new Error("Cannot generate upsert query for empty array");
+    }
+
+    const keys = Object.keys(entities[0]).filter(
+      (k) => entities[0][k as keyof T] !== undefined
+    );
+
+    const valuePlaceholders = entities
+      .map(() => `(${keys.map(() => "?").join(",")})`)
+      .join(",");
+
+    // Fields to update (exclude unique key, CreatedBy, CreatedOn, and specified fields)
+    const excludeSet = new Set([
+      uniqueKey,
+      ...(excludeFromUpdate || []),
+      "CreatedBy" as keyof T,
+      "CreatedOn" as keyof T,
+    ]);
+
+    const updateFields = keys.filter((k) => !excludeSet.has(k as keyof T));
+    const updateClause = updateFields
+      .map((k) => `${k} = VALUES(${k})`)
+      .join(", ");
+
+    return `INSERT INTO ${this.table} (${keys.join(",")}) 
+          VALUES ${valuePlaceholders}
+          ON DUPLICATE KEY UPDATE ${updateClause}`;
   }
 
   /**

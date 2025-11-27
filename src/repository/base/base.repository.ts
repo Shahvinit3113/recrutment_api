@@ -66,6 +66,25 @@ export class BaseRepository<T extends BaseEntities> extends BaseQueries<T> {
   }
 
   /**
+   * Creates multiple records in the database using a single query
+   * @param entities Array of entities to create
+   * @returns Promise resolving to array of created entities
+   */
+  async createMany(entities: T[]): Promise<T[]> {
+    if (!entities.length) {
+      return [];
+    }
+
+    const query = this.insertManyQuery(entities);
+    const values = entities.flatMap((entity) =>
+      Object.values(entity).map((value) => (value === undefined ? null : value))
+    );
+
+    await this._db.execute(query, values);
+    return entities;
+  }
+
+  /**
    * Updates an existing record in the database
    * @param entity Updated entity data
    * @param id Unique identifier of the record to update
@@ -76,6 +95,77 @@ export class BaseRepository<T extends BaseEntities> extends BaseQueries<T> {
     const values = [...Object.values(entity).slice(1), id];
     await this._db.execute(query, values);
     return entity;
+  }
+
+  /**
+   * Updates multiple records in the database using a single query
+   * @param entities Array of entities with updated values (must include Uid)
+   * @param excludeFields Optional array of field names to exclude from update (Uid is always excluded)
+   * @returns Promise resolving to array of updated entities
+   */
+  async updateMany(entities: T[], excludeFields?: (keyof T)[]): Promise<T[]> {
+    if (!entities.length) {
+      return [];
+    }
+
+    // Get all fields from first entity, excluding Uid and specified fields
+    const allFields = Object.keys(entities[0]) as (keyof T)[];
+    const fieldsToExclude = Array.from(
+      new Set([...(excludeFields || []), "Uid" as keyof T])
+    );
+
+    const updateFields = allFields.filter(
+      (field) => !fieldsToExclude.includes(field)
+    );
+
+    const query = this.updateManyQuery(entities, fieldsToExclude);
+
+    const caseValues: any[] = [];
+    updateFields.forEach((field) => {
+      entities.forEach((entity) => {
+        caseValues.push(entity.Uid);
+        caseValues.push(entity[field] === undefined ? null : entity[field]);
+      });
+    });
+
+    const uids = entities.map((e) => e.Uid);
+    const values = [...caseValues, ...uids];
+
+    await this._db.execute(query, values);
+    return entities;
+  }
+
+  /**
+   * Upserts multiple records in a single query (bulk operation)
+   * Requires a UNIQUE constraint on the key field (default: Uid)
+   * @param entities Array of entities to upsert
+   * @param uniqueKey The unique constraint column (defaults to 'Uid')
+   * @param excludeFromUpdate Optional fields to exclude from update
+   * @returns Promise resolving to array of upserted entities
+   */
+  async upsertMany(
+    entities: T[],
+    uniqueKey: keyof T = "Uid" as keyof T,
+    excludeFromUpdate?: (keyof T)[]
+  ): Promise<T[]> {
+    if (!entities.length) {
+      return [];
+    }
+
+    const query = this.upsertManyQuery(entities, uniqueKey, excludeFromUpdate);
+
+    // Flatten all entity values in the same order as keys
+    const values = entities.flatMap((entity) =>
+      Object.keys(entity)
+        .filter((k) => entity[k as keyof T] !== undefined)
+        .map((k) => {
+          const value = entity[k as keyof T];
+          return value === undefined ? null : value;
+        })
+    );
+
+    await this._db.execute(query, values);
+    return entities;
   }
 
   /**
