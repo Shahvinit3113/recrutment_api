@@ -1,5 +1,7 @@
+import { Utility } from "@/core/utils/common.utils";
+
 export class BaseEntities {
-  Uid: string = "";
+  Uid: string = Utility.generateUUID();
   OrgId: string = "";
   IsActive: boolean = true;
   IsDeleted: boolean = false;
