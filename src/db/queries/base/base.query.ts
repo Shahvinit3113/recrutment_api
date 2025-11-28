@@ -6,7 +6,7 @@ import { Filter } from "@/data/filters/filter";
  * @template T - Entity type that extends IBaseEntities
  */
 export class BaseQueries<T extends BaseEntities> {
-  private table: string;
+  protected table: string;
 
   /**
    * Initializes a new instance of base queries

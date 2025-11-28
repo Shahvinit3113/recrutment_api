@@ -1,0 +1,21 @@
+{
+  "name": "@recruitment/linq-to-sql",
+  "version": "1.0.0",
+  "description": "LINQ-style type-safe query builder that converts TypeScript expressions to SQL",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@babel/parser": "^7.23.0",
+    "@babel/traverse": "^7.23.0",
+    "@babel/types": "^7.23.0"
+  },
+  "devDependencies": {
+    "@types/babel__traverse": "^7.20.3",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}

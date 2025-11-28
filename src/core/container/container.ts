@@ -2,6 +2,7 @@ import { Container } from "inversify";
 import { TYPES } from "./types";
 import { DatabaseConnection } from "@/db/connection/connection";
 import { Repository } from "@/repository/base/repository";
+import { DbContext } from "@/db/context/db.context";
 
 import { UserService } from "@/service/implementation/user.service";
 import { UserInfoService } from "@/service/implementation/user-info.service";
@@ -32,6 +33,11 @@ const container = new Container({ defaultScope: "Singleton" });
 container
   .bind<DatabaseConnection>(TYPES.DatabaseConnection)
   .to(DatabaseConnection)
+  .inSingletonScope();
+
+container
+  .bind<DbContext>(TYPES.DbContext)
+  .to(DbContext)
   .inSingletonScope();
 
 //#region Repository
