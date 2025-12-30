@@ -1,6 +1,7 @@
 import { TYPES } from "@/core/container/types";
 import { inject, injectable } from "inversify";
 import { DatabaseConnection } from "@/db/connection/connection";
+import { UnitOfWork } from "@/db/connection/unit-of-work";
 import { UserInfoRepository } from "../implementation/user-info.repository";
 import { TaskRepository } from "../implementation/task.repository";
 import { UserRepository } from "../implementation/user.repository";
@@ -26,13 +27,16 @@ export class Repository {
   public readonly FormTemplate: FormTemplateRepository;
   public readonly FormSection: FormSectionRepository;
   public readonly FormField: FormFieldRepository;
+  public readonly UnitOfWork!: UnitOfWork;
 
   /**
-   * Initializes all repositories with a shared database connection
+   * Initializes all repositories with a shared database connection and unit of work
    * @param dbConnection The database connection instance to use for all repositories
+   * @param unitOfWork The unit of work instance for transaction management
    */
   constructor(
-    @inject(TYPES.DatabaseConnection) dbConnection: DatabaseConnection
+    @inject(TYPES.DatabaseConnection) dbConnection: DatabaseConnection,
+    @inject(TYPES.UnitOfWork) unitOfWork: UnitOfWork
   ) {
     this.User = new UserRepository(dbConnection);
     this.UserInfo = new UserInfoRepository(dbConnection);

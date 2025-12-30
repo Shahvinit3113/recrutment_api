@@ -1,16 +1,18 @@
-import { controller } from "@/core/decorators/controller.decorator";
 import { Post } from "@/core/decorators/route.decorator";
-import { inject, injectable } from "inversify";
+import { inject } from "inversify";
 import { Response as ApiResponse } from "@/data/response/response";
-import { Request, Response } from "express";
+import { Response } from "express";
 import { TYPES } from "@/core/container/types";
 import { Public } from "@/core/decorators/public.decorator";
 import { LoginRequest } from "@/data/models/loginRequest";
 import { AuthResult } from "@/data/models/authResult";
 import { AuthService } from "@/service/implementation/auth.service";
+import { AutoController } from "@/core/container/auto-register";
+import { BodyRequest } from "@/core/types/express";
+import { ValidateBodySchema } from "@/core/decorators/validation.decorator";
+import { LoginSchema, RefreshTokenSchema } from "@/db/schemas/auth.schema";
 
-@injectable()
-@controller("/auth")
+@AutoController("/auth")
 export class AuthController {
   private readonly _authService: AuthService;
 
@@ -20,8 +22,9 @@ export class AuthController {
 
   @Public()
   @Post("/login")
+  @ValidateBodySchema(LoginSchema)
   async login(
-    req: Request<any, any, LoginRequest, any>,
+    req: BodyRequest<LoginRequest>,
     res: Response<ApiResponse<AuthResult>>
   ) {
     return res.send(
@@ -36,15 +39,9 @@ export class AuthController {
 
   @Public()
   @Post("/refresh")
+  @ValidateBodySchema(RefreshTokenSchema)
   async refreshToken(
-    req: Request<
-      any,
-      any,
-      {
-        RefreshToken: string;
-      },
-      any
-    >,
+    req: BodyRequest<{ RefreshToken: string }>,
     res: Response<ApiResponse<AuthResult>>
   ) {
     return res.send(

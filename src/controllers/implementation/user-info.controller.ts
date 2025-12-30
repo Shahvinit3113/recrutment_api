@@ -1,24 +1,18 @@
 import { UserInfo } from "@/data/entities/user-info";
 import { BaseController } from "../base/base.controller";
 import { Filter } from "@/data/filters/filter";
-import { inject, injectable } from "inversify";
+import { inject } from "inversify";
 import { TYPES } from "@/core/container/types";
-import { Result } from "@/data/response/response";
-import { controller } from "@/core/decorators/controller.decorator";
+import { SingleResult } from "@/data/response/response";
 import { authenticate } from "@/middleware/implementation/auth";
 import { UserInfoService } from "@/service/implementation/user-info.service";
 import { Get } from "@/core/decorators/route.decorator";
 import { Request, Response } from "express";
 import { Response as ApiResponse } from "@/data/response/response";
+import { AutoController } from "@/core/container/auto-register";
 
-@injectable()
-@controller("/userinfo", [authenticate])
-export class UserInfoController extends BaseController<
-  UserInfo,
-  UserInfo,
-  Filter,
-  Result<UserInfo>
-> {
+@AutoController("/userinfo", [authenticate])
+export class UserInfoController extends BaseController<UserInfo, UserInfo, Filter> {
   //#region Service Intialization
   private readonly _userInfoService: UserInfoService;
   //#endregion
@@ -30,8 +24,8 @@ export class UserInfoController extends BaseController<
 
   @Get("/profile/details")
   async getUserDetails(
-    req: Request<any, Result<UserInfo>, any, any>,
-    res: Response<ApiResponse<Result<UserInfo>>>
+    req: Request<any, SingleResult<UserInfo>, any, any>,
+    res: Response<ApiResponse<SingleResult<UserInfo>>>
   ) {
     return res.send(
       new ApiResponse(

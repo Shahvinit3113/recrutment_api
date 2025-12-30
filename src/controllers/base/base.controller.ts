@@ -1,46 +1,46 @@
 import { Delete, Get, Post, Put } from "@/core/decorators/route.decorator";
 import { BaseEntities } from "@/data/entities/base-entities";
-import { Filter } from "@/data/filters/filter";
-import { Response as ApiResponse } from "@/data/response/response";
+import { Filter, parsePagination } from "@/data/filters/filter";
+import { Response as ApiResponse, SingleResult, PagedListResult } from "@/data/response/response";
 import { VmService } from "@/service/vm/vm.service";
-import { Request, Response } from "express";
+import { Response } from "express";
+import { BodyRequest, ParamsRequest, TypedRequest, QueryRequest } from "@/core/types/express";
 
 /**
  * Base controller that provides standard REST API endpoints for CRUD operations
  * @template TVm - View Model type for create/update operations
  * @template T - Entity type that extends IBaseEntities
  * @template F - Filter type for search operations
- * @template TResult - Result type returned by operations
  */
 export abstract class BaseController<
   TVm,
   T extends BaseEntities,
-  F extends Filter,
-  TResult
+  F extends Filter
 > {
-  protected readonly _service: VmService<TVm, T, F, TResult>;
+  protected readonly _service: VmService<TVm, T, F>;
 
   /**
    * Initializes a new instance of the base controller
    * @param service The view model service to handle business logic
    */
-  constructor(service: VmService<TVm, T, F, TResult>) {
+  constructor(service: VmService<TVm, T, F>) {
     this._service = service;
   }
 
   /**
-   * Retrieves all records
-   * @param req Express request object containing filter criteria
+   * Retrieves all records with pagination
+   * @param req Express request object containing filter criteria and pagination
    * @param res Express response object
-   * @returns ApiResponse containing all matching records
+   * @returns ApiResponse containing paginated results
    */
   @Post("/all")
   async getAll(
-    req: Request<any, TResult, F, any>,
-    res: Response<ApiResponse<TResult>>
+    req: TypedRequest<any, F, any>,
+    res: Response<ApiResponse<PagedListResult<T>>>
   ) {
+    const pagination = parsePagination(req.body);
     return res.send(
-      new ApiResponse(true, 200, "Success", await this._service.getAllAsync())
+      new ApiResponse(true, 200, "Success", await this._service.getAllAsync(pagination))
     );
   }
 
@@ -52,8 +52,8 @@ export abstract class BaseController<
    */
   @Get("/:id")
   async getById(
-    req: Request<{ id: string }, TResult, any, any>,
-    res: Response<ApiResponse<TResult>>
+    req: ParamsRequest<{ id: string }>,
+    res: Response<ApiResponse<SingleResult<T>>>
   ) {
     return res.send(
       new ApiResponse(
@@ -73,8 +73,8 @@ export abstract class BaseController<
    */
   @Post("/")
   async create(
-    req: Request<any, TResult, TVm, any>,
-    res: Response<ApiResponse<TResult>>
+    req: BodyRequest<TVm>,
+    res: Response<ApiResponse<SingleResult<T>>>
   ) {
     return res.send(
       new ApiResponse(
@@ -94,8 +94,8 @@ export abstract class BaseController<
    */
   @Put("/:id")
   async update(
-    req: Request<{ id: string }, TResult, TVm, any>,
-    res: Response<ApiResponse<TResult>>
+    req: TypedRequest<{ id: string }, TVm, any>,
+    res: Response<ApiResponse<SingleResult<T>>>
   ) {
     return res.send(
       new ApiResponse(
@@ -115,7 +115,7 @@ export abstract class BaseController<
    */
   @Delete("/:id")
   async delete(
-    req: Request<{ id: string }, ApiResponse<boolean>, any, any>,
+    req: ParamsRequest<{ id: string }>,
     res: Response<ApiResponse<boolean>>
   ) {
     return res.send(

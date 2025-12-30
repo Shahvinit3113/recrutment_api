@@ -1,56 +1,89 @@
 import { injectable } from "inversify";
 import { Caller } from "./caller";
 import { Role } from "@/data/enums/role";
+import {
+  requestContext,
+  RequestContextData,
+} from "@/core/context/request-context";
 
+/**
+ * CallerService provides access to the current request's user context.
+ *
+ * This service now uses AsyncLocalStorage internally via requestContext
+ * to provide thread-safe, request-scoped data isolation.
+ *
+ * @deprecated Direct usage is supported for backward compatibility.
+ * Consider using `requestContext` directly for new code.
+ */
 @injectable()
 export class CallerService {
-  private caller: Caller;
-
+  /**
+   * @deprecated Use requestContext middleware instead.
+   * This method is kept for backward compatibility.
+   */
   setCaller(caller: Caller) {
-    if (caller == null || typeof caller == "undefined") {
-      this.setUnknownCaller();
-      return;
-    }
-    this.caller = new Caller({
-      Email: caller.Email,
-      UserId: caller.UserId,
-      Role: caller.Role,
-      TenantId: caller.TenantId,
-      InfoId: caller.InfoId,
-    });
+    // This is now a no-op as context is set via middleware
+    // The actual context is managed by requestContext via AsyncLocalStorage
+    console.warn(
+      "CallerService.setCaller is deprecated. Context is now managed by requestContext middleware."
+    );
   }
 
+  /**
+   * @deprecated Use requestContext middleware instead.
+   */
   setUnknownCaller() {
-    this.caller = new Caller({
-      Email: "",
-      Role: Role.Employee,
-      UserId: "0000",
-      TenantId: "0000",
-      InfoId: "0000",
+    console.warn(
+      "CallerService.setUnknownCaller is deprecated. Context is now managed by requestContext middleware."
+    );
+  }
+
+  get userId(): string {
+    return requestContext.hasContext() ? requestContext.userId : "0000";
+  }
+
+  get role(): Role {
+    return requestContext.hasContext() ? requestContext.role : Role.Employee;
+  }
+
+  get mail(): string {
+    return requestContext.hasContext() ? requestContext.email : "";
+  }
+
+  get tenantId(): string {
+    return requestContext.hasContext() ? requestContext.tenantId : "0000";
+  }
+
+  get _caller(): Caller {
+    if (!requestContext.hasContext()) {
+      return new Caller({
+        Email: "",
+        Role: Role.Employee,
+        UserId: "0000",
+        TenantId: "0000",
+        InfoId: "0000",
+      });
+    }
+
+    const ctx = requestContext.getContextOrThrow();
+    return new Caller({
+      Email: ctx.email,
+      Role: ctx.role,
+      UserId: ctx.userId,
+      TenantId: ctx.tenantId,
+      InfoId: ctx.infoId,
     });
   }
 
-  get userId() {
-    return this.caller.UserId;
+  get infoId(): string {
+    return requestContext.hasContext() ? requestContext.infoId : "0000";
   }
 
-  get role() {
-    return this.caller.Role;
-  }
-
-  get mail() {
-    return this.caller.Email;
-  }
-
-  get tenantId() {
-    return this.caller.TenantId;
-  }
-
-  get _caller() {
-    return this.caller;
-  }
-
-  get infoId() {
-    return this._caller.InfoId;
+  /**
+   * Get the full request context data
+   * Provides access to additional request metadata like requestId and startTime
+   */
+  get context(): RequestContextData | undefined {
+    return requestContext.getContext();
   }
 }

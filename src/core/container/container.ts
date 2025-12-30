@@ -1,30 +1,10 @@
 import { Container } from "inversify";
 import { TYPES } from "./types";
 import { DatabaseConnection } from "@/db/connection/connection";
+import { UnitOfWork } from "@/db/connection/unit-of-work";
 import { Repository } from "@/repository/base/repository";
-
-import { UserService } from "@/service/implementation/user.service";
-import { UserInfoService } from "@/service/implementation/user-info.service";
 import { CallerService } from "@/service/caller/caller.service";
-
-import { UserController } from "@/controllers/implementation/user.controller";
-import { UserInfoController } from "@/controllers/implementation/user-info.controller";
-import { AuthService } from "@/service/implementation/auth.service";
-import { AuthController } from "@/controllers/implementation/auth.controller";
-import { TaskController } from "@/controllers/implementation/task.controller";
-import { TaskService } from "@/service/implementation/task.service";
-import { PositionsService } from "@/service/implementation/positions.service";
-import { PositionsController } from "@/controllers/implementation/positions.controller";
-import { OrganizationService } from "@/service/implementation/organization.service";
-import { OrganizationController } from "@/controllers/implementation/organization.controller";
-import { DepartmentService } from "@/service/implementation/department.service";
-import { DepartmentController } from "@/controllers/implementation/department.controller";
-import { FormTemplateController } from "@/controllers/implementation/form_template.controller";
-import { FormTemplateService } from "@/service/implementation/form_template.service";
-import { FormSectionService } from "@/service/implementation/form_section.service";
-import { FormFieldService } from "@/service/implementation/form_field.service";
-import { FormSectionController } from "@/controllers/implementation/form_section.controller";
-import { FormFieldController } from "@/controllers/implementation/form_field.controller";
+import { autoRegister } from "./auto-register";
 
 const container = new Container({ defaultScope: "Singleton" });
 
@@ -34,88 +14,18 @@ container
   .to(DatabaseConnection)
   .inSingletonScope();
 
+// UnitOfWork is request-scoped to ensure transaction isolation per request
+container.bind<UnitOfWork>(TYPES.UnitOfWork).to(UnitOfWork).inRequestScope();
+
 //#region Repository
 container.bind<Repository>(TYPES.Repository).to(Repository).inSingletonScope();
 
-//#region Services
-container.bind<UserService>(TYPES.UserService).to(UserService).inRequestScope();
-container
-  .bind<UserInfoService>(TYPES.UserInfoService)
-  .to(UserInfoService)
-  .inRequestScope();
-container.bind<TaskService>(TYPES.TaskService).to(TaskService).inRequestScope();
-container.bind<AuthService>(TYPES.AuthService).to(AuthService).inRequestScope();
-container
-  .bind<PositionsService>(TYPES.PositionsService)
-  .to(PositionsService)
-  .inRequestScope();
-container
-  .bind<OrganizationService>(TYPES.OrganizationService)
-  .to(OrganizationService)
-  .inRequestScope();
-container
-  .bind<DepartmentService>(TYPES.DepartmentService)
-  .to(DepartmentService)
-  .inRequestScope();
-container
-  .bind<FormTemplateService>(TYPES.FormTemplateService)
-  .to(FormTemplateService)
-  .inRequestScope();
-container
-  .bind<FormSectionService>(TYPES.FormSectionService)
-  .to(FormSectionService)
-  .inRequestScope();
-container
-  .bind<FormFieldService>(TYPES.FormFieldService)
-  .to(FormFieldService)
-  .inRequestScope();
+// CallerService now uses AsyncLocalStorage internally,
+// but we keep it in request scope for proper DI lifecycle
+container.bind<CallerService>(TYPES.Caller).to(CallerService).inRequestScope();
 
-container
-  .bind<CallerService>(TYPES.Caller)
-  .to(CallerService)
-  .inSingletonScope();
-
-//#region Controllers
-// Bind controllers by class only (RouteLoader resolves by class)
-container
-  .bind<UserController>(UserController)
-  .to(UserController)
-  .inRequestScope();
-container
-  .bind<UserInfoController>(UserInfoController)
-  .to(UserInfoController)
-  .inRequestScope();
-container
-  .bind<AuthController>(AuthController)
-  .to(AuthController)
-  .inRequestScope();
-container
-  .bind<TaskController>(TaskController)
-  .to(TaskController)
-  .inRequestScope();
-container
-  .bind<PositionsController>(PositionsController)
-  .to(PositionsController)
-  .inRequestScope();
-container
-  .bind<OrganizationController>(OrganizationController)
-  .to(OrganizationController)
-  .inRequestScope();
-container
-  .bind<DepartmentController>(DepartmentController)
-  .to(DepartmentController)
-  .inRequestScope();
-container
-  .bind<FormTemplateController>(FormTemplateController)
-  .to(FormTemplateController)
-  .inRequestScope();
-container
-  .bind<FormSectionController>(FormSectionController)
-  .to(FormSectionController)
-  .inRequestScope();
-container
-  .bind<FormFieldController>(FormFieldController)
-  .to(FormFieldController)
-  .inRequestScope();
+//#region Auto-Registration
+// Automatically discover and register all @Service and @AutoController decorated classes
+autoRegister(container);
 
 export { container };

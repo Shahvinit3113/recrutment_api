@@ -1,24 +1,19 @@
 import { BaseController } from "../base/base.controller";
 import { Filter } from "@/data/filters/filter";
-import { Result } from "@/data/response/response";
-import { inject, injectable } from "inversify";
-import { controller } from "@/core/decorators/controller.decorator";
+import { SingleResult } from "@/data/response/response";
+import { inject } from "inversify";
 import { authenticate } from "@/middleware/implementation/auth";
 import { TYPES } from "@/core/container/types";
 import { FormField } from "@/data/entities/form_field";
 import { FormFieldService } from "@/service/implementation/form_field.service";
 import { Post } from "@/core/decorators/route.decorator";
-import { Request, Response } from "express";
+import { Response } from "express";
 import { Response as ApiResponse } from "@/data/response/response";
+import { AutoController } from "@/core/container/auto-register";
+import { BodyRequest } from "@/core/types/express";
 
-@injectable()
-@controller("/formField", [authenticate])
-export class FormFieldController extends BaseController<
-  FormField,
-  FormField,
-  Filter,
-  Result<FormField>
-> {
+@AutoController("/formField", [authenticate])
+export class FormFieldController extends BaseController<FormField, FormField, Filter> {
   private readonly _formFieldService;
 
   constructor(
@@ -30,8 +25,8 @@ export class FormFieldController extends BaseController<
 
   @Post("/upsert")
   async upsertFormFields(
-    req: Request<any, any, FormField[], any>,
-    res: Response<ApiResponse<Result<FormField[]>>>
+    req: BodyRequest<FormField[]>,
+    res: Response<ApiResponse<SingleResult<FormField[]>>>
   ) {
     return res.send(
       new ApiResponse(

@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { Response as AppResponse } from "@/data/response/response";
 import { InternalServerError } from "../errors/internalServer.error";
-import { UnAuthorizedError } from "../errors/unauthorized.error.";
+import { UnAuthorizedError } from "../errors/unauthorized.error";
 import { ValidationError } from "../errors/validation.error";
 import { NotFoundError } from "../errors/notFound.error";
 import { UnknownError } from "../errors/unknown.error";

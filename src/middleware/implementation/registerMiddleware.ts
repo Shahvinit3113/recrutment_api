@@ -7,8 +7,13 @@ import express from "express";
 import { corsOptions } from "@/core/config/cors";
 import { config } from "@/core/config/environment";
 import { requestLogger } from "./requestLogger";
+import { requestContextMiddleware } from "./requestContext";
 
 export const registerMiddleware = (app: Application): void => {
+  // MUST BE FIRST: Request context isolation via AsyncLocalStorage
+  // This ensures thread-safe per-request data storage
+  app.use(requestContextMiddleware);
+
   app.use(helmet());
   app.use(compression());
   app.use(cors(corsOptions));

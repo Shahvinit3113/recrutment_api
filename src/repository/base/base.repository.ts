@@ -3,6 +3,18 @@ import { BaseQueries } from "@/db/queries/base/base.query";
 import { inject, injectable } from "inversify";
 import { TYPES } from "@/core/container/types";
 import { BaseEntities } from "@/data/entities/base-entities";
+import { PaginationParams, calculateOffset } from "@/data/filters/filter";
+
+/**
+ * Paginated result from repository
+ */
+export interface PaginatedData<T> {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
 
 /**
  * Base repository implementation providing common CRUD operations
@@ -29,6 +41,125 @@ export class BaseRepository<T extends BaseEntities> extends BaseQueries<T> {
   async getAll(params: any[], columns?: (keyof T)[]): Promise<T[]> {
     const [rows] = await this._db.execute(this.seletAllQuery(columns), params);
     return rows as T[];
+  }
+
+  /**
+   * Retrieves paginated records for a given organization
+   * @param tenantId Tenant/organization ID
+   * @param pagination Pagination parameters
+   * @param columns Optional array of column names to select
+   * @returns Promise resolving to paginated result
+   */
+  async getAllPaginated(
+    tenantId: string,
+    pagination: PaginationParams,
+    columns?: (keyof T)[]
+  ): Promise<PaginatedData<T>> {
+    const { page, limit, sortBy, sortOrder } = pagination;
+    const offset = calculateOffset(page, limit);
+
+    // Get total count
+    const countQuery = `SELECT COUNT(*) as total FROM ${this.table} WHERE TenantId = ? AND IsDeleted = 0`;
+    const [countResult] = await this._db.execute(countQuery, [tenantId]);
+    const total = (countResult as any[])[0]?.total || 0;
+
+    // Get paginated data
+    const fields = columns?.length ? columns.join(", ") : "*";
+    const orderField =
+      sortBy && this.isValidColumn(sortBy) ? sortBy : "CreatedOn";
+    const order = sortOrder?.toUpperCase() === "ASC" ? "ASC" : "DESC";
+
+    const dataQuery = `
+      SELECT ${fields} 
+      FROM ${this.table} 
+      WHERE TenantId = ? AND IsDeleted = 0 
+      ORDER BY ${orderField} ${order}
+      LIMIT ? OFFSET ?
+    `;
+
+    const [rows] = await this._db.execute(dataQuery, [tenantId, limit, offset]);
+
+    return {
+      data: rows as T[],
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+
+  /**
+   * Search records with pagination
+   * @param tenantId Tenant/organization ID
+   * @param searchTerm Search term to match against searchable columns
+   * @param searchColumns Columns to search in
+   * @param pagination Pagination parameters
+   * @param columns Optional array of column names to select
+   */
+  async searchPaginated(
+    tenantId: string,
+    searchTerm: string | undefined,
+    searchColumns: (keyof T)[],
+    pagination: PaginationParams,
+    columns?: (keyof T)[]
+  ): Promise<PaginatedData<T>> {
+    const { page, limit, sortBy, sortOrder } = pagination;
+    const offset = calculateOffset(page, limit);
+
+    let whereClause = "TenantId = ? AND IsDeleted = 0";
+    const params: any[] = [tenantId];
+
+    // Add search condition if search term provided
+    if (searchTerm && searchColumns.length > 0) {
+      const searchConditions = searchColumns
+        .map((col) => `${String(col)} LIKE ?`)
+        .join(" OR ");
+      whereClause += ` AND (${searchConditions})`;
+
+      const searchPattern = `%${searchTerm}%`;
+      searchColumns.forEach(() => params.push(searchPattern));
+    }
+
+    // Get total count
+    const countQuery = `SELECT COUNT(*) as total FROM ${this.table} WHERE ${whereClause}`;
+    const [countResult] = await this._db.execute(countQuery, params);
+    const total = (countResult as any[])[0]?.total || 0;
+
+    // Get paginated data
+    const fields = columns?.length ? columns.join(", ") : "*";
+    const orderField =
+      sortBy && this.isValidColumn(sortBy) ? sortBy : "CreatedOn";
+    const order = sortOrder?.toUpperCase() === "ASC" ? "ASC" : "DESC";
+
+    const dataQuery = `
+      SELECT ${fields} 
+      FROM ${this.table} 
+      WHERE ${whereClause}
+      ORDER BY ${orderField} ${order}
+      LIMIT ? OFFSET ?
+    `;
+
+    const [rows] = await this._db.execute(dataQuery, [
+      ...params,
+      limit,
+      offset,
+    ]);
+
+    return {
+      data: rows as T[],
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+
+  /**
+   * Check if a column name is valid (basic SQL injection prevention)
+   */
+  private isValidColumn(column: string): boolean {
+    // Only allow alphanumeric and underscore
+    return /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(column);
   }
 
   /**

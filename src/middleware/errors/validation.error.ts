@@ -1,9 +1,9 @@
 /**
- * Represents a validation error with HTTP status code 404
+ * Represents a validation error with HTTP status code 400 (Bad Request)
  * Used when input data fails validation rules
  */
 export class ValidationError extends Error {
-  readonly StatusCode: number = 404;
+  readonly StatusCode: number = 400; // Fixed: was 404, should be 400 for validation errors
 
   /**
    * Creates a new validation error

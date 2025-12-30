@@ -1,6 +1,7 @@
 export const TYPES = {
   // Database
   DatabaseConnection: Symbol.for("DatabaseConnection"),
+  UnitOfWork: Symbol.for("UnitOfWork"),
 
   // Services
   UserService: Symbol.for("UserService"),

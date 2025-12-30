@@ -1,13 +1,18 @@
 import { Request, Response, NextFunction } from "express";
 import { TYPES } from "@/core/container/types";
 import { CallerService } from "@/service/caller/caller.service";
-import { UnAuthorizedError } from "../errors/unauthorized.error.";
+import { UnAuthorizedError } from "../errors/unauthorized.error";
 import { JWT } from "@/core/utils/jwt.utils";
 import { RequestHandler } from "@/core/decorators/types";
 import { container } from "@/core/container/container";
 
 /**
  * Authentication middleware that validates JWT tokens and sets up caller context
+ *
+ * @deprecated This version uses the legacy CallerService.setCaller pattern.
+ * For new code, consider using authenticateWithContext from requestContext.ts
+ * which uses AsyncLocalStorage for better thread safety.
+ *
  * @param req Express request object containing authorization header with Bearer token
  * @param res Express response object
  * @param next Next middleware function
@@ -64,3 +69,6 @@ export const authenticate: RequestHandler = async (
     next(error);
   }
 };
+
+// Re-export the new context-based authentication for easy migration
+export { authenticateWithContext } from "./requestContext";

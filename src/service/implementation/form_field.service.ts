@@ -1,25 +1,21 @@
-import { inject, injectable } from "inversify";
+import { inject } from "inversify";
 import { VmService } from "../vm/vm.service";
 import { FormField } from "@/data/entities/form_field";
 import { Filter } from "@/data/filters/filter";
-import { Result } from "@/data/response/response";
+import { SingleResult } from "@/data/response/response";
 import { TYPES } from "@/core/container/types";
 import { Repository } from "@/repository/base/repository";
 import { CallerService } from "../caller/caller.service";
 import { Utility } from "@/core/utils/common.utils";
+import { Service } from "@/core/container/auto-register";
 
-injectable();
-export class FormFieldService extends VmService<
-  FormField,
-  FormField,
-  Filter,
-  Result<FormField>
-> {
+@Service({ scope: 'request' })
+export class FormFieldService extends VmService<FormField, FormField, Filter> {
   constructor(
     @inject(TYPES.Repository) repository: Repository,
     @inject(TYPES.Caller) callerService: CallerService
   ) {
-    super(repository.FormField, callerService, FormField);
+    super(repository.FormField, callerService, FormField, repository);
   }
 
   //#region Upsert
@@ -28,9 +24,9 @@ export class FormFieldService extends VmService<
    */
   async upsertMultipleFormFields(
     fields: FormField[]
-  ): Promise<Result<FormField[]>> {
+  ): Promise<SingleResult<FormField[]>> {
     if (!fields?.length) {
-      return Result.toEntityResult([]);
+      return SingleResult.of([]);
     }
 
     const now = new Date();
@@ -47,7 +43,7 @@ export class FormFieldService extends VmService<
 
     const upsertedFields = await this._repository.upsertMany(preparedFields);
 
-    return Result.toEntityResult(upsertedFields);
+    return SingleResult.of(upsertedFields);
   }
   //#endregion
 

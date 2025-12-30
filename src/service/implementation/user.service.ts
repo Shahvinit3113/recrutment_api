@@ -1,16 +1,16 @@
-import { inject, injectable } from "inversify";
+import { inject } from "inversify";
 import { VmService } from "../vm/vm.service";
 import { TYPES } from "@/core/container/types";
 import { User } from "@/data/entities/user";
-import { Result } from "@/data/response/response";
 import { Filter } from "@/data/filters/filter";
 import { CallerService } from "../caller/caller.service";
 import { Repository } from "@/repository/base/repository";
 import { UserRepository } from "@/repository/implementation/user.repository";
 import { ValidationError } from "@/middleware/errors/validation.error";
+import { Service } from "@/core/container/auto-register";
 
-@injectable()
-export class UserService extends VmService<User, User, Filter, Result<User>> {
+@Service({ scope: 'request' })
+export class UserService extends VmService<User, User, Filter> {
   protected declare _repository: UserRepository;
 
   //#region Constructor
@@ -18,7 +18,7 @@ export class UserService extends VmService<User, User, Filter, Result<User>> {
     @inject(TYPES.Repository) _repository: Repository,
     @inject(TYPES.Caller) _callerService: CallerService
   ) {
-    super(_repository.User, _callerService, User);
+    super(_repository.User, _callerService, User, _repository);
   }
 
   //#region Add

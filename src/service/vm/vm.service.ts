@@ -1,95 +1,137 @@
 import { BaseEntities } from "@/data/entities/base-entities";
-import { Filter } from "@/data/filters/filter";
+import { Filter, PaginationParams, parsePagination } from "@/data/filters/filter";
 import { CallerService } from "../caller/caller.service";
 import { BaseRepository } from "@/repository/base/base.repository";
-import { Result } from "@/data/response/response";
+import { 
+  Result, 
+  SingleResult, 
+  PagedListResult 
+} from "@/data/response/response";
 import { Utility } from "@/core/utils/common.utils";
 import { ValidationError } from "@/middleware/errors/validation.error";
+import { UnitOfWork } from "@/db/connection/unit-of-work";
 
 /**
  * Enhanced service class that works with view models and provides
- * comprehensive CRUD operations with validation and lifecycle hooks
+ * comprehensive CRUD operations with validation, lifecycle hooks, 
+ * transaction support, and proper typed responses.
  *
  * @template TVm - View Model type
- * @template T - Entity type that extends IBaseEntity
- * @template Filter - Filter criteria type
- * @template TResult - Result type for operations
+ * @template T - Entity type that extends BaseEntities
+ * @template F - Filter criteria type
  */
 export abstract class VmService<
   TVm,
   T extends BaseEntities,
-  F extends Filter,
-  TResult
+  F extends Filter
 > {
   protected _repository: BaseRepository<T>;
   protected readonly _callerService: CallerService;
   protected readonly entityType: new () => T;
+  private readonly _parentRepository?: any; // Repository instance with UnitOfWork
+
+  /**
+   * Gets the UnitOfWork from the parent repository for transaction management
+   */
+  protected get _unitOfWork(): UnitOfWork | undefined {
+    return this._parentRepository?.UnitOfWork;
+  }
 
   /**
    * Initializes a new instance of the VmService
-   * @param repositry Base repository instance for database operations
+   * @param repository Base repository instance for database operations
    * @param callerService Service containing context information about the current caller
    * @param entityType Constructor function for creating new instances of the entity
+   * @param parentRepository Optional parent Repository instance for accessing UnitOfWork
    */
   constructor(
-    repositry: BaseRepository<T>,
+    repository: BaseRepository<T>,
     callerService: CallerService,
-    entityType: new () => T
+    entityType: new () => T,
+    parentRepository?: any
   ) {
-    this._repository = repositry;
+    this._repository = repository;
     this._callerService = callerService;
     this.entityType = entityType;
+    this._parentRepository = parentRepository;
   }
 
-  //#region Get
+  //#region Get Operations
   /**
-   * Retrieves all records for the current organization
+   * Retrieves all records for the current organization with pagination
+   * @param pagination Pagination parameters
    * @param columns Optional array of specific columns to retrieve
-   * @returns Promise resolving to a paged result containing all matching records
-   * @remarks This method automatically filters by the current tenant ID and
-   * transforms the database entities into the appropriate result type
+   * @returns Promise resolving to a paged list result
    */
-  async getAllAsync(columns?: (keyof T)[]): Promise<TResult> {
-    return Result.toPagedResult(
-      1,
-      1,
-      1,
-      await this._repository.getAll([this._callerService.tenantId], columns)
-    ) as TResult;
+  async getAllAsync(
+    pagination?: PaginationParams,
+    columns?: (keyof T)[]
+  ): Promise<PagedListResult<T>> {
+    const paginationParams = pagination || parsePagination({});
+    
+    const result = await this._repository.getAllPaginated(
+      this._callerService.tenantId,
+      paginationParams,
+      columns
+    );
+
+    return PagedListResult.of(
+      result.data,
+      result.page,
+      result.limit,
+      result.total
+    );
   }
 
   /**
    * Retrieves a specific record by its unique identifier
    * @param id The unique identifier of the record to retrieve
    * @param columns Optional array of specific columns to retrieve
-   * @returns Promise resolving to the requested record
-   * @throws Error if the record is not found or doesn't belong to the current organization
-   * @remarks This method validates tenant access and transforms the database entity
-   * into the appropriate result type
+   * @returns Promise resolving to a single result
+   * @throws Error if the record is not found
    */
-  async getByIdAsync(id: string, columns?: (keyof T)[]): Promise<TResult> {
+  async getByIdAsync(
+    id: string,
+    columns?: (keyof T)[]
+  ): Promise<SingleResult<T>> {
     const entity = await this._repository.getById(
       id,
       [this._callerService.tenantId],
       columns
     );
+    
     if (entity == null) {
       throw new Error(`${this.entityType.name} not found`);
     }
 
-    return this.toEntityResult(entity);
+    return SingleResult.of(await this.transformEntity(entity));
   }
   //#endregion
 
-  //#region Add
+  //#region Add Operations
   /**
-   * Creates a new record in the system
+   * Creates a new record in the system with transaction support
    * @param model The view model containing the data for the new record
    * @returns Promise resolving to the newly created record
    */
-  async createAsync(model: TVm): Promise<TResult> {
+  async createAsync(model: TVm): Promise<SingleResult<T>> {
+    // Validate first
     await this.validateAdd(model);
 
+    // Use transaction if available
+    if (this._unitOfWork) {
+      return this._unitOfWork.withTransaction(async () => {
+        return this.performCreate(model);
+      });
+    }
+
+    return this.performCreate(model);
+  }
+
+  /**
+   * Internal method to perform the actual create operation
+   */
+  private async performCreate(model: TVm): Promise<SingleResult<T>> {
     let entity = this.toEntity(model);
 
     await this.preAddOperation(model, entity);
@@ -98,25 +140,22 @@ export abstract class VmService<
 
     await this.postAddOperation(model, entity);
 
-    return await this.toEntityResult(entity);
+    return SingleResult.of(await this.transformEntity(entity));
   }
 
   /**
    * Validates the model before creating a new record
    * @param entity The view model to validate
    * @throws Error if validation fails
-   * @remarks Override this method in derived classes to implement
-   * specific validation rules for entity creation
    */
-  async validateAdd(entity: TVm) {}
+  async validateAdd(entity: TVm): Promise<void> {}
 
   /**
    * Performs operations on the entity before it is created
    * @param model The original view model
    * @param entity The entity being created
-   * Override in derived classes to add custom pre-creation logic
    */
-  async preAddOperation(model: TVm, entity: T) {
+  async preAddOperation(model: TVm, entity: T): Promise<void> {
     entity.Uid = Utility.generateUUID();
     entity.OrgId = this._callerService.tenantId;
     entity.CreatedOn = new Date();
@@ -127,27 +166,38 @@ export abstract class VmService<
 
   /**
    * Performs operations after an entity has been created
-   * @param entity The original view model
-   * @param model The newly created entity
-   * @remarks Override this method in derived classes to implement
-   * additional operations that need to be performed after entity creation,
-   * such as creating related records or triggering events
+   * @param model The original view model
+   * @param entity The newly created entity
    */
-  async postAddOperation(entity: TVm, model: T) {}
-
+  async postAddOperation(model: TVm, entity: T): Promise<void> {}
   //#endregion
 
-  //#region Update
+  //#region Update Operations
   /**
-   * Updates an existing record in the system
+   * Updates an existing record in the system with transaction support
    * @param model The view model containing the updated data
    * @param id The unique identifier of the record to update
    * @returns Promise resolving to the updated record
    * @throws Error if the record is not found or validation fails
    */
-  async updateAsync(model: TVm, id: string): Promise<TResult> {
+  async updateAsync(model: TVm, id: string): Promise<SingleResult<T>> {
+    // Validate first
     await this.validateUpdate(model);
 
+    // Use transaction if available
+    if (this._unitOfWork) {
+      return this._unitOfWork.withTransaction(async () => {
+        return this.performUpdate(model, id);
+      });
+    }
+
+    return this.performUpdate(model, id);
+  }
+
+  /**
+   * Internal method to perform the actual update operation
+   */
+  private async performUpdate(model: TVm, id: string): Promise<SingleResult<T>> {
     let entity = await this._repository.getById(id, [
       this._callerService.tenantId,
     ]);
@@ -164,27 +214,22 @@ export abstract class VmService<
 
     await this.postUpdateOperation(model, entity);
 
-    return await this.toEntityResult(entity);
+    return SingleResult.of(await this.transformEntity(entity));
   }
 
   /**
    * Validates the model before updating a record
    * @param entity The view model to validate
    * @throws Error if validation fails
-   * @remarks Override this method in derived classes to implement
-   * specific validation rules for entity updates, such as
-   * checking for concurrent modifications or business rule violations
    */
-  async validateUpdate(entity: TVm) {}
+  async validateUpdate(entity: TVm): Promise<void> {}
 
   /**
    * Performs operations on the entity before it is updated
    * @param model The view model containing updated data
    * @param entity The existing entity being updated
-   * Override in derived classes to implement custom pre-update logic
-   * such as handling related entities or maintaining audit trails
    */
-  async preUpdateOperation(model: TVm, entity: T) {
+  async preUpdateOperation(model: TVm, entity: T): Promise<void> {
     entity.UpdatedOn = new Date();
     entity.UpdatedBy = this._callerService.userId;
 
@@ -195,31 +240,24 @@ export abstract class VmService<
 
   /**
    * Performs operations after an entity has been updated
-   * @param entity The view model used for update
-   * @param model The updated entity
-   * @remarks Override this method in derived classes to implement
-   * additional operations after update, such as updating related records,
-   * triggering notifications, or maintaining cache consistency
+   * @param model The view model used for update
+   * @param entity The updated entity
    */
-  async postUpdateOperation(entity: TVm, model: T) {}
-
+  async postUpdateOperation(model: TVm, entity: T): Promise<void> {}
   //#endregion
 
-  //#region Delete
+  //#region Delete Operations
   /**
    * Performs a soft delete on a record
    * @param id The unique identifier of the record to delete
    * @returns Promise resolving to boolean indicating success
-   * @remarks This method performs a soft delete by marking the record
-   * as deleted rather than removing it from the database. This maintains
-   * referential integrity and allows for potential recovery
    */
   async deleteAsync(id: string): Promise<boolean> {
     return await this._repository.softDelete(id);
   }
   //#endregion
 
-  //#region Functions
+  //#region Helper Functions
   /**
    * Convert view model to entity
    */
@@ -239,9 +277,6 @@ export abstract class VmService<
    * Merges view model properties into the existing entity
    * @param model The view model with updated values
    * @param entity The existing entity to update
-   * @remarks Copies all properties from the model to the entity,
-   * excluding metadata fields that are managed by the system,
-   * and removes any extra properties from joins
    */
   protected mergeModelToEntity(model: TVm, entity: T): void {
     const entityPrototype = new this.entityType();
@@ -257,16 +292,15 @@ export abstract class VmService<
       "IsDeleted",
     ];
 
-    // First, remove any properties from entity that don't belong to the entity type
+    // Remove any properties from entity that don't belong to the entity type
     for (const key in entity) {
       if (!(key in entityPrototype)) {
         delete (entity as any)[key];
       }
     }
 
-    // Then, merge the model properties into entity
+    // Merge the model properties into entity
     for (const key in model) {
-      // Skip system-managed fields AND only include fields that exist in the entity
       if (!excludedFields.includes(key) && key in entityPrototype) {
         (entity as any)[key] = (model as any)[key];
       }
@@ -274,10 +308,22 @@ export abstract class VmService<
   }
 
   /**
-   * Convert entity to result
+   * Transform entity for response (can be overridden for custom transformations)
+   * @param entity The entity to transform
+   * @returns Transformed entity
    */
-  async toEntityResult(entity: T): Promise<TResult> {
-    return entity as unknown as TResult;
+  protected async transformEntity(entity: T): Promise<T> {
+    return entity;
+  }
+  //#endregion
+
+  //#region Legacy Support (Deprecated)
+  /**
+   * @deprecated Use toTransformedEntity instead
+   * Kept for backward compatibility
+   */
+  async toEntityResult(entity: T): Promise<any> {
+    return entity;
   }
   //#endregion
 }

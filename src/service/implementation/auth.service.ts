@@ -4,12 +4,13 @@ import { Security } from "@/core/utils/security.utils";
 import { AuthResult } from "@/data/models/authResult";
 import { LoginRequest } from "@/data/models/loginRequest";
 import { NotFoundError } from "@/middleware/errors/notFound.error";
-import { UnAuthorizedError } from "@/middleware/errors/unauthorized.error.";
+import { UnAuthorizedError } from "@/middleware/errors/unauthorized.error";
 import { ValidationError } from "@/middleware/errors/validation.error";
 import { Repository } from "@/repository/base/repository";
-import { inject, injectable } from "inversify";
+import { inject } from "inversify";
+import { Service } from "@/core/container/auto-register";
 
-@injectable()
+@Service({ scope: 'request' })
 export class AuthService {
   private readonly _repository: Repository;
 
