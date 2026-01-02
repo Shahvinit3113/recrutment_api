@@ -4,5 +4,5 @@ export class Positions extends BaseEntities {
   Name: string = "";
   Description: string = "";
   DepartmentId: string = "";
-  FormTemplateId: string = "";
+  ApplicationTemplateId: string = "";
 }
