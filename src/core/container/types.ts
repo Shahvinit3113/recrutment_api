@@ -13,6 +13,7 @@ export const TYPES = {
   FormTemplateService: Symbol.for("FormTemplateService"),
   FormSectionService: Symbol.for("FormSectionService"),
   FormFieldService: Symbol.for("FormFieldService"),
+  ApplicationService: Symbol.for("ApplicationService"),
 
   // Repository
   Repository: Symbol.for("Repository"),

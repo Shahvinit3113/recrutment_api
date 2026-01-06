@@ -8,4 +8,5 @@ export const Tables = {
   FormTemplate: "FormTemplate",
   FormSection: "FormSection",
   FormField: "FormField",
+  Application: "Application",
 } as const;

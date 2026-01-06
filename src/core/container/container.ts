@@ -25,6 +25,8 @@ import { FormSectionService } from "@/service/implementation/form_section.servic
 import { FormFieldService } from "@/service/implementation/form_field.service";
 import { FormSectionController } from "@/controllers/implementation/form_section.controller";
 import { FormFieldController } from "@/controllers/implementation/form_field.controller";
+import { ApplicationController } from "@/controllers/implementation/application.controller";
+import { ApplicationService } from "@/service/implementation/application.service";
 
 const container = new Container({ defaultScope: "Singleton" });
 
@@ -68,6 +70,10 @@ container
 container
   .bind<FormFieldService>(TYPES.FormFieldService)
   .to(FormFieldService)
+  .inRequestScope();
+container
+  .bind<ApplicationService>(TYPES.ApplicationService)
+  .to(ApplicationService)
   .inRequestScope();
 
 container
@@ -116,6 +122,10 @@ container
 container
   .bind<FormFieldController>(FormFieldController)
   .to(FormFieldController)
+  .inRequestScope();
+container
+  .bind<ApplicationController>(ApplicationController)
+  .to(ApplicationController)
   .inRequestScope();
 
 export { container };

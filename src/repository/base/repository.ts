@@ -10,6 +10,7 @@ import { DepartmentRepository } from "../implementation/department.repository";
 import { FormTemplateRepository } from "../implementation/form_template.repository";
 import { FormSectionRepository } from "../implementation/form_section.repository";
 import { FormFieldRepository } from "../implementation/form_field.repository";
+import { ApplicationRepository } from "../implementation/application.repository";
 
 /**
  * Central repository factory that provides access to all domain-specific repositories
@@ -26,6 +27,7 @@ export class Repository {
   public readonly FormTemplate: FormTemplateRepository;
   public readonly FormSection: FormSectionRepository;
   public readonly FormField: FormFieldRepository;
+  public readonly Application: ApplicationRepository;
 
   /**
    * Initializes all repositories with a shared database connection
@@ -43,5 +45,6 @@ export class Repository {
     this.FormTemplate = new FormTemplateRepository(dbConnection);
     this.FormSection = new FormSectionRepository(dbConnection);
     this.FormField = new FormFieldRepository(dbConnection);
+    this.Application = new ApplicationRepository(dbConnection);
   }
 }
