@@ -28,6 +28,12 @@ export class FormFieldController extends BaseController<
     this._formFieldService = formFieldService;
   }
 
+  /**
+   * Upsert multiple form fields
+   * @param req
+   * @param res
+   * @returns
+   */
   @Post("/upsert")
   async upsertFormFields(
     req: Request<any, any, FormField[], any>,

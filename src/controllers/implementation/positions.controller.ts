@@ -1,5 +1,5 @@
 import { Positions } from "@/data/entities/positions";
-import { Result } from "@/data/response/response";
+import { Result, Response as ApiResponse } from "@/data/response/response";
 import { BaseController } from "../base/base.controller";
 import { inject, injectable } from "inversify";
 import { TYPES } from "@/core/container/types";
@@ -8,6 +8,9 @@ import { Filter } from "@/data/filters/filter";
 import { controller } from "@/core/decorators/controller.decorator";
 import { authenticate } from "@/middleware/implementation/auth";
 import { PositionsResult } from "@/data/results/position.result";
+import { Get } from "@/core/decorators/route.decorator";
+import { Request, Response } from "express";
+import { Public } from "@/core/decorators/public.decorator";
 
 @injectable()
 @controller("/position", [authenticate])
@@ -17,9 +20,35 @@ export class PositionsController extends BaseController<
   Filter,
   Result<PositionsResult>
 > {
+  //#region Service Initialization
+  private readonly _positionsService: PositionsService;
+  //#endregion
   constructor(
     @inject(TYPES.PositionsService) positionsService: PositionsService
   ) {
     super(positionsService);
+    this._positionsService = positionsService;
+  }
+
+  /**
+   * Get all positions as public
+   * @param req
+   * @param res
+   * @returns
+   */
+  @Public()
+  @Get("/public/all")
+  async getAllPositionsAsPublic(
+    req: Request<{ ordId: string }, unknown, unknown, unknown>,
+    res: Response<ApiResponse<Result<Positions[]>>>
+  ): Promise<Response<ApiResponse<Result<Positions[]>>>> {
+    return res.send(
+      new ApiResponse(
+        true,
+        200,
+        "Success",
+        await this._positionsService.getAllPublicPositions(req.params.ordId)
+      )
+    );
   }
 }

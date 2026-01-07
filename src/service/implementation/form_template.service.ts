@@ -21,4 +21,17 @@ export class FormTemplateService extends VmService<
   ) {
     super(repository.FormTemplate, callerService, FormTemplate);
   }
+
+  /**
+   * Get form template by id for public access
+   * @param templateId
+   * @param orgId
+   * @returns
+   */
+  async getFormTemplateByIdForPublic(templateId: string, orgId: string) {
+    const data = (await this._repository.getById(templateId, [
+      orgId,
+    ])) as FormTemplateResult;
+    return Result.toEntityResult<FormTemplateResult>(data);
+  }
 }

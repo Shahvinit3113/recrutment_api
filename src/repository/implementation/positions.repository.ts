@@ -18,6 +18,21 @@ export class PositionsRepository extends BaseRepository<Positions> {
   }
 
   /**
+   * Generates a query to select all public active records for an organization
+   * @param columns
+   * @returns
+   */
+  async selectAllPublicQuery(
+    columns?: (keyof Positions)[] | undefined,
+    orgId?: string
+  ): Promise<Positions[]> {
+    const columnList = columns && columns.length > 0 ? columns.join(", ") : "*";
+    const query = `SELECT ${columnList} FROM ${Tables.Positions} WHERE IsDeleted = 0 AND OrgId = ?`;
+    const [result] = await this._db.execute(query, [orgId]);
+    return result as Positions[];
+  }
+
+  /**
    * Generates a query to select a record by its unique identifier
    * @param columns Optional array of column names to select
    * @returns SQL query string

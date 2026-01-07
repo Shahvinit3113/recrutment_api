@@ -20,4 +20,20 @@ export class ApplicationService extends VmService<
   ) {
     super(repository.Application, callerService, Application);
   }
+
+  //#region Add
+  /**
+   * Pre add operation
+   * @param model
+   * @param entity
+   */
+  override async preAddOperation(
+    model: Application,
+    entity: Application
+  ): Promise<void> {
+    super.preAddOperation(model, entity);
+    entity.OrgId = model.OrgId ?? this._callerService.tenantId;
+    entity.CreatedBy = "00000000-0000-0000-0000-000000000000"; //system user
+  }
+  //#endregion
 }
