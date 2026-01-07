@@ -37,9 +37,9 @@ export class PositionsController extends BaseController<
    * @returns
    */
   @Public()
-  @Get("/public/all")
+  @Get("/public/:orgId/all")
   async getAllPositionsAsPublic(
-    req: Request<{ ordId: string }, unknown, unknown, unknown>,
+    req: Request<{ orgId: string }, unknown, unknown, unknown>,
     res: Response<ApiResponse<Result<Positions[]>>>
   ): Promise<Response<ApiResponse<Result<Positions[]>>>> {
     return res.send(
@@ -47,7 +47,7 @@ export class PositionsController extends BaseController<
         true,
         200,
         "Success",
-        await this._positionsService.getAllPublicPositions(req.params.ordId)
+        await this._positionsService.getAllPublicPositions(req.params.orgId)
       )
     );
   }
