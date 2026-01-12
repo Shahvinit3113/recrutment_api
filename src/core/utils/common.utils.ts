@@ -100,6 +100,15 @@ export class Utility {
     }
   }
 
+  static isValidJson(jsonString: string): boolean {
+    try {
+      JSON.parse(jsonString);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
   static async retryWithBackoff<T>(
     fn: () => Promise<T>,
     maxRetries: number = 3,
@@ -111,7 +120,10 @@ export class Utility {
       try {
         return await fn();
       } catch (error) {
-        lastError = error;
+        if (error instanceof Error) {
+          lastError = error;
+        }
+
         if (attempt === maxRetries) break;
 
         const delay = baseDelay * Math.pow(2, attempt);

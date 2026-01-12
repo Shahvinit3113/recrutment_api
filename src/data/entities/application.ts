@@ -10,4 +10,5 @@ export class Application extends BaseEntities {
   CurrentSalary: number | null = null;
   ExpectedSalary: number | null = null;
   NoticePeriod: number | null = null;
+  MetaData: string | null = null;
 }
