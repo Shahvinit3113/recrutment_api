@@ -7,9 +7,10 @@ import { UserService } from "@/service/implementation/user.service";
 import { Filter } from "@/data/filters/filter";
 import { controller } from "@/core/decorators/controller.decorator";
 import { authenticate } from "@/middleware/implementation/auth";
+import { initializeCaller } from "@/middleware/implementation/callerInit";
 
 @injectable()
-@controller("/user", [authenticate])
+@controller("/user", [initializeCaller, authenticate])
 export class UserController extends BaseController<
   User,
   User,

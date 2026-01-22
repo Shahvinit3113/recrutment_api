@@ -5,11 +5,12 @@ import { Result } from "@/data/response/response";
 import { inject, injectable } from "inversify";
 import { controller } from "@/core/decorators/controller.decorator";
 import { authenticate } from "@/middleware/implementation/auth";
+import { initializeCaller } from "@/middleware/implementation/callerInit";
 import { TYPES } from "@/core/container/types";
 import { TaskService } from "@/service/implementation/task.service";
 
 @injectable()
-@controller("/task", [authenticate])
+@controller("/task", [initializeCaller, authenticate])
 export class TaskController extends BaseController<
   Task,
   Task,

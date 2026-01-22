@@ -18,7 +18,7 @@ export class ApplicationService extends VmService<
 > {
   constructor(
     @inject(TYPES.Repository) repository: Repository,
-    @inject(TYPES.Caller) callerService: CallerService
+    @inject(TYPES.Caller) callerService: CallerService,
   ) {
     super(repository.Application, callerService, Application);
   }
@@ -31,11 +31,17 @@ export class ApplicationService extends VmService<
    */
   override async preAddOperation(
     model: Application,
-    entity: Application
+    entity: Application,
   ): Promise<void> {
     super.preAddOperation(model, entity);
+
+    // For public/anonymous submissions, use provided OrgId or default to anonymous tenant
     entity.OrgId = model.OrgId ?? this._callerService.tenantId;
-    entity.CreatedBy = "00000000-0000-0000-0000-000000000000"; //system user
+
+    // For anonymous callers, use system user ID
+    if (this._callerService.isAnonymous) {
+      entity.CreatedBy = "00000000-0000-0000-0000-000000000000"; // system/anonymous user
+    }
   }
 
   /**

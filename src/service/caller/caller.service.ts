@@ -4,7 +4,7 @@ import { Role } from "@/data/enums/role";
 
 @injectable()
 export class CallerService {
-  private caller: Caller;
+  private caller: Caller | undefined;
 
   setCaller(caller: Caller) {
     if (caller == null || typeof caller == "undefined") {
@@ -20,6 +20,24 @@ export class CallerService {
     });
   }
 
+  /**
+   * Sets an anonymous/public caller for unauthenticated requests
+   * Used by public endpoints that don't require authentication
+   * Uses special UUID format for anonymous users
+   */
+  setAnonymousCaller() {
+    this.caller = new Caller({
+      Email: "anonymous@public",
+      Role: Role.Unknwon,
+      UserId: "00000000-0000-0000-0000-000000000000",
+      TenantId: "00000000-0000-0000-0000-000000000000",
+      InfoId: "00000000-0000-0000-0000-000000000000",
+    });
+  }
+
+  /**
+   * @deprecated Use setAnonymousCaller() instead
+   */
   setUnknownCaller() {
     this.caller = new Caller({
       Email: "",
@@ -30,24 +48,56 @@ export class CallerService {
     });
   }
 
+  /**
+   * Checks if the current caller is authenticated (not anonymous)
+   */
+  get isAuthenticated(): boolean {
+    return (
+      this.caller != null &&
+      this.caller.UserId !== "00000000-0000-0000-0000-000000000000"
+    );
+  }
+
+  /**
+   * Checks if the current caller is anonymous/public
+   */
+  get isAnonymous(): boolean {
+    return !this.isAuthenticated;
+  }
+
   get userId() {
-    return this.caller.UserId;
+    if (!this.caller) {
+      this.setAnonymousCaller();
+    }
+    return this.caller!.UserId;
   }
 
   get role() {
-    return this.caller.Role;
+    if (!this.caller) {
+      this.setAnonymousCaller();
+    }
+    return this.caller!.Role;
   }
 
   get mail() {
-    return this.caller.Email;
+    if (!this.caller) {
+      this.setAnonymousCaller();
+    }
+    return this.caller!.Email;
   }
 
   get tenantId() {
-    return this.caller.TenantId;
+    if (!this.caller) {
+      this.setAnonymousCaller();
+    }
+    return this.caller!.TenantId;
   }
 
   get _caller() {
-    return this.caller;
+    if (!this.caller) {
+      this.setAnonymousCaller();
+    }
+    return this.caller!;
   }
 
   get infoId() {

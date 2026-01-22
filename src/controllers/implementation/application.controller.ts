@@ -7,12 +7,13 @@ import { TYPES } from "@/core/container/types";
 import { ApplicationService } from "@/service/implementation/application.service";
 import { controller } from "@/core/decorators/controller.decorator";
 import { authenticate } from "@/middleware/implementation/auth";
+import { initializeCaller } from "@/middleware/implementation/callerInit";
 import { Request, Response } from "express";
 import { Post } from "@/core/decorators/route.decorator";
 import { Public } from "@/core/decorators/public.decorator";
 
 @injectable()
-@controller("/application", [authenticate])
+@controller("/application", [initializeCaller, authenticate])
 export class ApplicationController extends BaseController<
   Application,
   Application,
@@ -20,7 +21,7 @@ export class ApplicationController extends BaseController<
   Result<Application>
 > {
   constructor(
-    @inject(TYPES.ApplicationService) applicationService: ApplicationService
+    @inject(TYPES.ApplicationService) applicationService: ApplicationService,
   ) {
     super(applicationService);
   }
@@ -41,15 +42,15 @@ export class ApplicationController extends BaseController<
       any,
       Record<string, any>
     >,
-    res: Response<ApiResponse<Result<Application>>, Record<string, any>>
+    res: Response<ApiResponse<Result<Application>>, Record<string, any>>,
   ): Promise<Response<ApiResponse<Result<Application>>, Record<string, any>>> {
     return res.send(
       new ApiResponse(
         true,
         200,
         "Success",
-        await this._service.createAsync(req.body)
-      )
+        await this._service.createAsync(req.body),
+      ),
     );
   }
 }

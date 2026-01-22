@@ -5,6 +5,7 @@ import { Result, Response as ApiResponse } from "@/data/response/response";
 import { inject, injectable } from "inversify";
 import { controller } from "@/core/decorators/controller.decorator";
 import { authenticate } from "@/middleware/implementation/auth";
+import { initializeCaller } from "@/middleware/implementation/callerInit";
 import { TYPES } from "@/core/container/types";
 import { FormTemplateService } from "@/service/implementation/form_template.service";
 import { FormTemplateResult } from "@/data/results/form_template_result";
@@ -13,7 +14,7 @@ import { Get } from "@/core/decorators/route.decorator";
 import { Public } from "@/core/decorators/public.decorator";
 
 @injectable()
-@controller("/formTemplate", [authenticate])
+@controller("/formTemplate", [initializeCaller, authenticate])
 export class FormTemplateController extends BaseController<
   FormTemplate,
   FormTemplate,
@@ -25,7 +26,7 @@ export class FormTemplateController extends BaseController<
   //#endregion
 
   constructor(
-    @inject(TYPES.FormTemplateService) formTemplateService: FormTemplateService
+    @inject(TYPES.FormTemplateService) formTemplateService: FormTemplateService,
   ) {
     super(formTemplateService);
     this._formTemplateService = formTemplateService;
@@ -41,7 +42,7 @@ export class FormTemplateController extends BaseController<
   @Get("/public/:orgId/:templateId")
   async getFormTemplateByIdForPublic(
     req: Request<{ orgId: string; templateId: string }>,
-    res: Response<ApiResponse<Result<FormTemplateResult>>>
+    res: Response<ApiResponse<Result<FormTemplateResult>>>,
   ) {
     return res.send(
       new ApiResponse(
@@ -50,9 +51,9 @@ export class FormTemplateController extends BaseController<
         "Success",
         await this._formTemplateService.getFormTemplateByIdForPublic(
           req.params.templateId,
-          req.params.orgId
-        )
-      )
+          req.params.orgId,
+        ),
+      ),
     );
   }
 }

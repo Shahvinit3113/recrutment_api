@@ -7,13 +7,14 @@ import { PositionsService } from "@/service/implementation/positions.service";
 import { Filter } from "@/data/filters/filter";
 import { controller } from "@/core/decorators/controller.decorator";
 import { authenticate } from "@/middleware/implementation/auth";
+import { initializeCaller } from "@/middleware/implementation/callerInit";
 import { PositionsResult } from "@/data/results/position.result";
 import { Get } from "@/core/decorators/route.decorator";
 import { Request, Response } from "express";
 import { Public } from "@/core/decorators/public.decorator";
 
 @injectable()
-@controller("/position", [authenticate])
+@controller("/position", [initializeCaller, authenticate])
 export class PositionsController extends BaseController<
   Positions,
   Positions,
@@ -24,7 +25,7 @@ export class PositionsController extends BaseController<
   private readonly _positionsService: PositionsService;
   //#endregion
   constructor(
-    @inject(TYPES.PositionsService) positionsService: PositionsService
+    @inject(TYPES.PositionsService) positionsService: PositionsService,
   ) {
     super(positionsService);
     this._positionsService = positionsService;
@@ -40,15 +41,15 @@ export class PositionsController extends BaseController<
   @Get("/public/:orgId/all")
   async getAllPositionsAsPublic(
     req: Request<{ orgId: string }, unknown, unknown, unknown>,
-    res: Response<ApiResponse<Result<Positions[]>>>
+    res: Response<ApiResponse<Result<Positions[]>>>,
   ): Promise<Response<ApiResponse<Result<Positions[]>>>> {
     return res.send(
       new ApiResponse(
         true,
         200,
         "Success",
-        await this._positionsService.getAllPublicPositions(req.params.orgId)
-      )
+        await this._positionsService.getAllPublicPositions(req.params.orgId),
+      ),
     );
   }
 }

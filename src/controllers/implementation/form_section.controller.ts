@@ -5,13 +5,14 @@ import { Result } from "@/data/response/response";
 import { inject, injectable } from "inversify";
 import { controller } from "@/core/decorators/controller.decorator";
 import { authenticate } from "@/middleware/implementation/auth";
+import { initializeCaller } from "@/middleware/implementation/callerInit";
 import { TYPES } from "@/core/container/types";
 import { FormTemplateService } from "@/service/implementation/form_template.service";
 import { FormSection } from "@/data/entities/form_section";
 import { FormSectionService } from "@/service/implementation/form_section.service";
 
 @injectable()
-@controller("/formSection", [authenticate])
+@controller("/formSection", [initializeCaller, authenticate])
 export class FormSectionController extends BaseController<
   FormSection,
   FormSection,
@@ -19,7 +20,7 @@ export class FormSectionController extends BaseController<
   Result<FormSection>
 > {
   constructor(
-    @inject(TYPES.FormSectionService) formSectionService: FormSectionService
+    @inject(TYPES.FormSectionService) formSectionService: FormSectionService,
   ) {
     super(formSectionService);
   }

@@ -8,9 +8,10 @@ import { Public } from "@/core/decorators/public.decorator";
 import { LoginRequest } from "@/data/models/loginRequest";
 import { AuthResult } from "@/data/models/authResult";
 import { AuthService } from "@/service/implementation/auth.service";
+import { initializeCaller } from "@/middleware/implementation/callerInit";
 
 @injectable()
-@controller("/auth")
+@controller("/auth", [initializeCaller])
 export class AuthController {
   private readonly _authService: AuthService;
 
@@ -22,15 +23,15 @@ export class AuthController {
   @Post("/login")
   async login(
     req: Request<any, any, LoginRequest, any>,
-    res: Response<ApiResponse<AuthResult>>
+    res: Response<ApiResponse<AuthResult>>,
   ) {
     return res.send(
       new ApiResponse<AuthResult>(
         true,
         200,
         "Success",
-        await this._authService.loginUser(req.body)
-      )
+        await this._authService.loginUser(req.body),
+      ),
     );
   }
 
@@ -45,15 +46,15 @@ export class AuthController {
       },
       any
     >,
-    res: Response<ApiResponse<AuthResult>>
+    res: Response<ApiResponse<AuthResult>>,
   ) {
     return res.send(
       new ApiResponse(
         true,
         200,
         "Success",
-        await this._authService.refreshToken(req.body?.RefreshToken)
-      )
+        await this._authService.refreshToken(req.body?.RefreshToken),
+      ),
     );
   }
 }

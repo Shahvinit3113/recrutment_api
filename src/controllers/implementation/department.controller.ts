@@ -7,9 +7,10 @@ import { inject, injectable } from "inversify";
 import { DepartmentService } from "@/service/implementation/department.service";
 import { controller } from "@/core/decorators/controller.decorator";
 import { authenticate } from "@/middleware/implementation/auth";
+import { initializeCaller } from "@/middleware/implementation/callerInit";
 
 @injectable()
-@controller("/department", [authenticate])
+@controller("/department", [initializeCaller, authenticate])
 export class DepartmentController extends BaseController<
   Department,
   Department,
@@ -17,7 +18,7 @@ export class DepartmentController extends BaseController<
   Result<Department>
 > {
   constructor(
-    @inject(TYPES.DepartmentService) departmentService: DepartmentService
+    @inject(TYPES.DepartmentService) departmentService: DepartmentService,
   ) {
     super(departmentService);
   }

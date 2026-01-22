@@ -6,13 +6,14 @@ import { TYPES } from "@/core/container/types";
 import { Result } from "@/data/response/response";
 import { controller } from "@/core/decorators/controller.decorator";
 import { authenticate } from "@/middleware/implementation/auth";
+import { initializeCaller } from "@/middleware/implementation/callerInit";
 import { UserInfoService } from "@/service/implementation/user-info.service";
 import { Get } from "@/core/decorators/route.decorator";
 import { Request, Response } from "express";
 import { Response as ApiResponse } from "@/data/response/response";
 
 @injectable()
-@controller("/userinfo", [authenticate])
+@controller("/userinfo", [initializeCaller, authenticate])
 export class UserInfoController extends BaseController<
   UserInfo,
   UserInfo,
@@ -31,15 +32,15 @@ export class UserInfoController extends BaseController<
   @Get("/profile/details")
   async getUserDetails(
     req: Request<any, Result<UserInfo>, any, any>,
-    res: Response<ApiResponse<Result<UserInfo>>>
+    res: Response<ApiResponse<Result<UserInfo>>>,
   ) {
     return res.send(
       new ApiResponse(
         true,
         200,
         "Success",
-        await this._userInfoService.getUserDetails()
-      )
+        await this._userInfoService.getUserDetails(),
+      ),
     );
   }
 }

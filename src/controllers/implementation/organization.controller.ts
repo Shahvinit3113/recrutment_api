@@ -7,9 +7,10 @@ import { TYPES } from "@/core/container/types";
 import { OrganizationService } from "@/service/implementation/organization.service";
 import { controller } from "@/core/decorators/controller.decorator";
 import { authenticate } from "@/middleware/implementation/auth";
+import { initializeCaller } from "@/middleware/implementation/callerInit";
 
 @injectable()
-@controller("/organization", [authenticate])
+@controller("/organization", [initializeCaller, authenticate])
 export class OrganizationController extends BaseController<
   Organization,
   Organization,
@@ -17,7 +18,7 @@ export class OrganizationController extends BaseController<
   Result<Organization>
 > {
   constructor(
-    @inject(TYPES.OrganizationService) organizationService: OrganizationService
+    @inject(TYPES.OrganizationService) organizationService: OrganizationService,
   ) {
     super(organizationService);
   }
