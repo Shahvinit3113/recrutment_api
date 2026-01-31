@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>New Job Opportunity</title>
+  </head>
+  <body
+    style="
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+    "
+  >
+    <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff">
+      <!-- Header -->
+      <div
+        style="
+          background-color: #ff9800;
+          color: white;
+          padding: 30px 20px;
+          text-align: center;
+        "
+      >
+        <h1 style="margin: 0; font-size: 28px">💼 New Job Opportunity</h1>
+      </div>
+
+      <!-- Content -->
+      <div style="padding: 30px 20px">
+        <h2 style="color: #333; margin-top: 0">Hello {{userName}},</h2>
+        <p style="color: #666; font-size: 16px; line-height: 1.8">
+          We have a new opportunity that matches your profile and interests!
+        </p>
+
+        <!-- Job Details -->
+        <div
+          style="
+            background-color: #fff3e0;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 25px 0;
+            border-left: 4px solid #ff9800;
+          "
+        >
+          <h3 style="color: #ff9800; margin-top: 0">{{positionTitle}}</h3>
+          <p style="margin: 12px 0; color: #333">
+            <strong>📍 Location:</strong> {{location}}
+          </p>
+          <p style="margin: 12px 0; color: #333">
+            <strong>💼 Employment Type:</strong> {{employmentType}}
+          </p>
+          <p style="margin: 12px 0; color: #333">
+            <strong>💰 Salary Range:</strong> {{salaryRange}}
+          </p>
+          <p style="margin: 12px 0; color: #333">
+            <strong>📅 Posted:</strong> {{postedDate}}
+          </p>
+          <p style="margin: 12px 0; color: #333">
+            <strong>⏰ Apply Before:</strong> {{deadline}}
+          </p>
+        </div>
+
+        <!-- Job Description -->
+        <div style="margin: 25px 0">
+          <h3 style="color: #333">About the Role</h3>
+          <p style="color: #666; font-size: 15px; line-height: 1.8">
+            {{jobDescription}}
+          </p>
+        </div>
+
+        <!-- Key Requirements -->
+        <div style="margin: 25px 0">
+          <h3 style="color: #333">Key Requirements</h3>
+          <ul
+            style="
+              color: #666;
+              font-size: 15px;
+              line-height: 1.8;
+              padding-left: 20px;
+            "
+          >
+            {{requirements}}
+          </ul>
+        </div>
+
+        <!-- CTA Button -->
+        <div style="text-align: center; margin: 30px 0">
+          <a
+            href="{{applyUrl}}"
+            style="
+              display: inline-block;
+              background-color: #ff9800;
+              color: white;
+              padding: 14px 30px;
+              text-decoration: none;
+              border-radius: 5px;
+              font-weight: bold;
+              font-size: 16px;
+            "
+          >
+            Apply Now
+          </a>
+        </div>
+
+        <!-- Info Box -->
+        <div
+          style="
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 25px 0;
+          "
+        >
+          <p style="margin: 0; color: #1976d2; font-size: 14px">
+            <strong>💡 Quick Apply:</strong> Your profile is already saved.
+            Application takes less than 2 minutes!
+          </p>
+        </div>
+
+        <p
+          style="
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-top: 25px;
+          "
+        >
+          Don't want to receive job alerts?
+          <a href="{{unsubscribeUrl}}" style="color: #ff9800"
+            >Update your preferences</a
+          >
+        </p>
+      </div>
+
+      <!-- Footer -->
+      <div
+        style="
+          background-color: #333;
+          color: #999;
+          padding: 20px;
+          text-align: center;
+          font-size: 12px;
+        "
+      >
+        <p style="margin: 0 0 5px 0">
+          © {{year}} Recruitment System. All rights reserved.
+        </p>
+        <p style="margin: 0">
+          This is an automated message, please do not reply.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>
