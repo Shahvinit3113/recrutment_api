@@ -1,17 +1,17 @@
 import { inject, injectable } from 'inversify';
 import { TYPES } from '@/core/container/types';
-import { Task } from '@/data/entities/task';
+import { EmailTemplate } from '@/data/entities/email_template';
 import { TableNames } from '@/database/tables';
-import { IUnitOfWork } from '@/repository/interfaces';
 import { CallerService } from '../caller/caller.service';
 import { BaseService } from '../base/base.service';
+import { IUnitOfWork } from '@/repository';
 
 @injectable()
-export class TaskService extends BaseService<Task> {
+export class EmailTemplateService extends BaseService<EmailTemplate> {
   constructor(
     @inject(TYPES.UnitOfWork) unitOfWork: IUnitOfWork,
     @inject(TYPES.Caller) callerService: CallerService
   ) {
-    super(unitOfWork, callerService, TableNames.Task, Task);
+    super(unitOfWork, callerService, TableNames.EmailTemplate, EmailTemplate);
   }
 }

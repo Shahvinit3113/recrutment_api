@@ -2,6 +2,7 @@ import { Container } from "inversify";
 import { TYPES } from "./types";
 import { DatabaseConnection } from "@/db/connection/connection";
 import { Repository } from "@/repository/base/repository";
+import { UnitOfWork } from "@/repository/unit-of-work";
 
 import { UserService } from "@/service/implementation/user.service";
 import { UserInfoService } from "@/service/implementation/user-info.service";
@@ -27,6 +28,13 @@ import { FormSectionController } from "@/controllers/implementation/form_section
 import { FormFieldController } from "@/controllers/implementation/form_field.controller";
 import { ApplicationController } from "@/controllers/implementation/application.controller";
 import { ApplicationService } from "@/service/implementation/application.service";
+import { EmailTemplateController } from "@/controllers/implementation/email_template.controller";
+import { EmailTemplateService } from "@/service/implementation/email_template.service";
+import { OptionGroupController } from "@/controllers/implementation/option_group.controller";
+import { OptionGroupService } from "@/service/implementation/option_group.service";
+import { OptionsController } from "@/controllers/implementation/options.controller";
+import { OptionsService } from "@/service/implementation/options.service";
+import { IUnitOfWork } from "@/repository";
 
 const container = new Container({ defaultScope: "Singleton" });
 
@@ -38,6 +46,9 @@ container
 
 //#region Repository
 container.bind<Repository>(TYPES.Repository).to(Repository).inSingletonScope();
+
+// Unit of Work (new Knex-based pattern)
+container.bind<IUnitOfWork>(TYPES.UnitOfWork).to(UnitOfWork).inRequestScope();
 
 //#region Services
 container.bind<UserService>(TYPES.UserService).to(UserService).inRequestScope();
@@ -74,6 +85,18 @@ container
 container
   .bind<ApplicationService>(TYPES.ApplicationService)
   .to(ApplicationService)
+  .inRequestScope();
+container
+  .bind<EmailTemplateService>(TYPES.EmailTemplateService)
+  .to(EmailTemplateService)
+  .inRequestScope();
+container
+  .bind<OptionGroupService>(TYPES.OptionGroupService)
+  .to(OptionGroupService)
+  .inRequestScope();
+container
+  .bind<OptionsService>(TYPES.OptionsService)
+  .to(OptionsService)
   .inRequestScope();
 
 container
@@ -126,6 +149,18 @@ container
 container
   .bind<ApplicationController>(ApplicationController)
   .to(ApplicationController)
+  .inRequestScope();
+container
+  .bind<EmailTemplateController>(EmailTemplateController)
+  .to(EmailTemplateController)
+  .inRequestScope();
+container
+  .bind<OptionGroupController>(OptionGroupController)
+  .to(OptionGroupController)
+  .inRequestScope();
+container
+  .bind<OptionsController>(OptionsController)
+  .to(OptionsController)
   .inRequestScope();
 
 export { container };

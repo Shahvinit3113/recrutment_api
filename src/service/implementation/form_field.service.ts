@@ -1,30 +1,25 @@
-import { inject, injectable } from "inversify";
-import { VmService } from "../vm/vm.service";
-import { FormField } from "@/data/entities/form_field";
-import { Filter } from "@/data/filters/filter";
-import { Result } from "@/data/response/response";
-import { TYPES } from "@/core/container/types";
-import { Repository } from "@/repository/base/repository";
-import { CallerService } from "../caller/caller.service";
-import { Utility } from "@/core/utils/common.utils";
+import { inject, injectable } from 'inversify';
+import { TYPES } from '@/core/container/types';
+import { FormField } from '@/data/entities/form_field';
+import { TableNames } from '@/database/tables';
+import { CallerService } from '../caller/caller.service';
+import { BaseService } from '../base/base.service';
+import { Result } from '@/data/response/response';
+import { Utility } from '@/core/utils/common.utils';
+import { IUnitOfWork } from '@/repository';
 
-injectable();
-export class FormFieldService extends VmService<
-  FormField,
-  FormField,
-  Filter,
-  Result<FormField>
-> {
+@injectable()
+export class FormFieldService extends BaseService<FormField> {
   constructor(
-    @inject(TYPES.Repository) repository: Repository,
+    @inject(TYPES.UnitOfWork) unitOfWork: IUnitOfWork,
     @inject(TYPES.Caller) callerService: CallerService
   ) {
-    super(repository.FormField, callerService, FormField);
+    super(unitOfWork, callerService, TableNames.FormField, FormField);
   }
 
-  //#region Upsert
   /**
-   * Updated FormFieldService using the new upsertMany method
+   * Upsert multiple form fields
+   * Creates new fields or updates existing ones based on Uid
    */
   async upsertMultipleFormFields(
     fields: FormField[]
@@ -34,8 +29,9 @@ export class FormFieldService extends VmService<
     }
 
     const now = new Date();
-    const emptyGuid = "00000000-0000-0000-0000-000000000000";
+    const emptyGuid = '00000000-0000-0000-0000-000000000000';
 
+    // Prepare all fields with proper metadata
     const preparedFields = fields.map((f) => ({
       ...this.toFormField(f),
       Uid: f.Uid && f.Uid !== emptyGuid ? f.Uid : Utility.generateUUID(),
@@ -45,19 +41,40 @@ export class FormFieldService extends VmService<
       OrgId: this._callerService.tenantId,
     }));
 
-    const upsertedFields = await this._repository.upsertMany(preparedFields);
+    // Use transaction for atomic upsert
+    const upsertedFields = await this.transaction(async (trx) => {
+      const results: FormField[] = [];
+      const repo = this.unitOfWork.getTransactionalRepository<FormField>(
+        TableNames.FormField,
+        trx
+      );
+
+      for (const field of preparedFields) {
+        // Check if exists
+        const existing = await repo.findById(field.Uid, field.OrgId);
+
+        if (existing) {
+          // Update
+          await repo.update(field.Uid, field);
+          results.push({ ...existing, ...field } as FormField);
+        } else {
+          // Create
+          field.CreatedOn = now;
+          await repo.create(field as FormField);
+          results.push(field as FormField);
+        }
+      }
+
+      return results;
+    });
 
     return Result.toEntityResult(upsertedFields);
   }
-  //#endregion
 
-  //#region Private Functions
   /**
-   *
-   * @param field
-   * @returns
+   * Convert input to FormField with proper defaults
    */
-  private toFormField(field: FormField) {
+  private toFormField(field: FormField): Partial<FormField> {
     const newField = new FormField();
 
     newField.FormSectionId = field.FormSectionId;
@@ -65,7 +82,7 @@ export class FormFieldService extends VmService<
     newField.Name = field.Name;
     newField.Placeholder = field.Placeholder;
     newField.Type = field.Type;
-    newField.OptionId = field.OptionId;
+    newField.OptionGroupId = field.OptionGroupId;
     newField.HelpText = field.HelpText;
     newField.IsRequired = field.IsRequired;
     newField.DefaultValue = field.DefaultValue;
@@ -85,5 +102,4 @@ export class FormFieldService extends VmService<
 
     return newField;
   }
-  //#endregion
 }

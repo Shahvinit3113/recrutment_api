@@ -1,6 +1,7 @@
 export const TYPES = {
   // Database
   DatabaseConnection: Symbol.for("DatabaseConnection"),
+  UnitOfWork: Symbol.for("UnitOfWork"),
 
   // Services
   UserService: Symbol.for("UserService"),
@@ -14,6 +15,9 @@ export const TYPES = {
   FormSectionService: Symbol.for("FormSectionService"),
   FormFieldService: Symbol.for("FormFieldService"),
   ApplicationService: Symbol.for("ApplicationService"),
+  EmailTemplateService: Symbol.for("EmailTemplateService"),
+  OptionGroupService: Symbol.for("OptionGroupService"),
+  OptionsService: Symbol.for("OptionsService"),
 
   // Repository
   Repository: Symbol.for("Repository"),

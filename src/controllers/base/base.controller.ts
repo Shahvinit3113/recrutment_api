@@ -2,13 +2,16 @@ import { Delete, Get, Post, Put } from "@/core/decorators/route.decorator";
 import { BaseEntities } from "@/data/entities/base-entities";
 import { Filter } from "@/data/filters/filter";
 import { Response as ApiResponse } from "@/data/response/response";
-import { VmService } from "@/service/vm/vm.service";
+import { IService } from "@/service/interfaces";
 import { Request, Response } from "express";
 
 /**
  * Base controller that provides standard REST API endpoints for CRUD operations
+ * 
+ * Works with any service that implements IService (both VmService and BaseService)
+ * 
  * @template TVm - View Model type for create/update operations
- * @template T - Entity type that extends IBaseEntities
+ * @template T - Entity type that extends BaseEntities
  * @template F - Filter type for search operations
  * @template TResult - Result type returned by operations
  */
@@ -18,13 +21,13 @@ export abstract class BaseController<
   F extends Filter,
   TResult
 > {
-  protected readonly _service: VmService<TVm, T, F, TResult>;
+  protected readonly _service: IService<T, TVm>;
 
   /**
    * Initializes a new instance of the base controller
-   * @param service The view model service to handle business logic
+   * @param service The service to handle business logic
    */
-  constructor(service: VmService<TVm, T, F, TResult>) {
+  constructor(service: IService<T, TVm>) {
     this._service = service;
   }
 
@@ -36,8 +39,8 @@ export abstract class BaseController<
    */
   @Post("/all")
   async getAll(
-    req: Request<any, TResult, F, any>,
-    res: Response<ApiResponse<TResult>>
+    req: Request<any, any, F, any>,
+    res: Response<ApiResponse<any>>
   ) {
     return res.send(
       new ApiResponse(true, 200, "Success", await this._service.getAllAsync())
@@ -52,8 +55,8 @@ export abstract class BaseController<
    */
   @Get("/:id")
   async getById(
-    req: Request<{ id: string }, TResult, any, any>,
-    res: Response<ApiResponse<TResult>>
+    req: Request<{ id: string }, any, any, any>,
+    res: Response<ApiResponse<any>>
   ) {
     return res.send(
       new ApiResponse(
@@ -73,8 +76,8 @@ export abstract class BaseController<
    */
   @Post("/")
   async create(
-    req: Request<any, TResult, TVm, any>,
-    res: Response<ApiResponse<TResult>>
+    req: Request<any, any, TVm, any>,
+    res: Response<ApiResponse<any>>
   ) {
     return res.send(
       new ApiResponse(
@@ -94,8 +97,8 @@ export abstract class BaseController<
    */
   @Put("/:id")
   async update(
-    req: Request<{ id: string }, TResult, TVm, any>,
-    res: Response<ApiResponse<TResult>>
+    req: Request<{ id: string }, any, TVm, any>,
+    res: Response<ApiResponse<any>>
   ) {
     return res.send(
       new ApiResponse(
@@ -115,7 +118,7 @@ export abstract class BaseController<
    */
   @Delete("/:id")
   async delete(
-    req: Request<{ id: string }, ApiResponse<boolean>, any, any>,
+    req: Request<{ id: string }, any, any, any>,
     res: Response<ApiResponse<boolean>>
   ) {
     return res.send(
