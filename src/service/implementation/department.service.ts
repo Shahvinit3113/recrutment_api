@@ -1,23 +1,17 @@
-import { Department } from "@/data/entities/department";
-import { VmService } from "../vm/vm.service";
-import { Filter } from "@/data/filters/filter";
-import { Result } from "@/data/response/response";
-import { TYPES } from "@/core/container/types";
-import { Repository } from "@/repository/base/repository";
-import { inject, injectable } from "inversify";
-import { CallerService } from "../caller/caller.service";
+import { inject, injectable } from 'inversify';
+import { TYPES } from '@/core/container/types';
+import { Department } from '@/data/entities/department';
+import { TableNames } from '@/database/tables';
+import { IUnitOfWork } from '@/repository/interfaces';
+import { CallerService } from '../caller/caller.service';
+import { BaseService } from '../base/base.service';
 
 @injectable()
-export class DepartmentService extends VmService<
-  Department,
-  Department,
-  Filter,
-  Result<Department>
-> {
+export class DepartmentService extends BaseService<Department> {
   constructor(
-    @inject(TYPES.Repository) repository: Repository,
+    @inject(TYPES.UnitOfWork) unitOfWork: IUnitOfWork,
     @inject(TYPES.Caller) callerService: CallerService
   ) {
-    super(repository.Department, callerService, Department);
+    super(unitOfWork, callerService, TableNames.Department, Department);
   }
 }

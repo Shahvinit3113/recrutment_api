@@ -111,14 +111,20 @@ export const config: EnvironmentConfig = {
   // Rate Limiting
   RATE_LIMIT_WINDOW_MS: parseInt(
     process.env.RATE_LIMIT_WINDOW_MS || "900000",
-    10
+    10,
   ),
   RATE_LIMIT_MAX_REQUESTS: parseInt(
     process.env.RATE_LIMIT_MAX_REQUESTS || "100",
-    10
+    10,
   ),
 };
 
 export const isDevelopment = config.NODE_ENV === "development";
 export const isProduction = config.NODE_ENV === "production";
 export const isTest = config.NODE_ENV === "test";
+
+console.log({
+  host: config.DB_HOST,
+  user: config.DB_USER,
+  database: config.DB_NAME,
+});

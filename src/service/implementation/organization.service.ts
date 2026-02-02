@@ -1,23 +1,17 @@
-import { Organization } from "@/data/entities/organization";
-import { VmService } from "../vm/vm.service";
-import { Filter } from "@/data/filters/filter";
-import { Result } from "@/data/response/response";
-import { inject, injectable } from "inversify";
-import { TYPES } from "@/core/container/types";
-import { Repository } from "@/repository/base/repository";
-import { CallerService } from "../caller/caller.service";
+import { inject, injectable } from 'inversify';
+import { TYPES } from '@/core/container/types';
+import { Organization } from '@/data/entities/organization';
+import { TableNames } from '@/database/tables';
+import { IUnitOfWork } from '@/repository/interfaces';
+import { CallerService } from '../caller/caller.service';
+import { BaseService } from '../base/base.service';
 
-injectable();
-export class OrganizationService extends VmService<
-  Organization,
-  Organization,
-  Filter,
-  Result<Organization>
-> {
+@injectable()
+export class OrganizationService extends BaseService<Organization> {
   constructor(
-    @inject(TYPES.Repository) repository: Repository,
+    @inject(TYPES.UnitOfWork) unitOfWork: IUnitOfWork,
     @inject(TYPES.Caller) callerService: CallerService
   ) {
-    super(repository.Organization, callerService, Organization);
+    super(unitOfWork, callerService, TableNames.Organization, Organization);
   }
 }

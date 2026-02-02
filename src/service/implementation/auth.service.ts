@@ -1,20 +1,39 @@
-import { TYPES } from "@/core/container/types";
-import { JWT } from "@/core/utils/jwt.utils";
-import { Security } from "@/core/utils/security.utils";
-import { AuthResult } from "@/data/models/authResult";
-import { LoginRequest } from "@/data/models/loginRequest";
-import { NotFoundError } from "@/middleware/errors/notFound.error";
-import { UnAuthorizedError } from "@/middleware/errors/unauthorized.error.";
-import { ValidationError } from "@/middleware/errors/validation.error";
-import { Repository } from "@/repository/base/repository";
-import { inject, injectable } from "inversify";
+import { inject, injectable } from 'inversify';
+import { TYPES } from '@/core/container/types';
+import { JWT } from '@/core/utils/jwt.utils';
+import { Security } from '@/core/utils/security.utils';
+import { TemplateHelper } from '@/core/helper/template.helper';
+import { AuthResult } from '@/data/models/authResult';
+import { LoginRequest } from '@/data/models/loginRequest';
+import { EmailService, NodemailerConfig } from '@/email';
+import { NotFoundError } from '@/middleware/errors/notFound.error';
+import { UnAuthorizedError } from '@/middleware/errors/unauthorized.error.';
+import { ValidationError } from '@/middleware/errors/validation.error';
+import { IUnitOfWork } from '@/repository/interfaces';
+import { TableNames } from '@/database/tables';
+import { User } from '@/data/entities/user';
+import { UserInfo } from '@/data/entities/user-info';
 
 @injectable()
 export class AuthService {
-  private readonly _repository: Repository;
+  private readonly unitOfWork: IUnitOfWork;
 
-  constructor(@inject(TYPES.Repository) _repository: Repository) {
-    this._repository = _repository;
+  constructor(@inject(TYPES.UnitOfWork) unitOfWork: IUnitOfWork) {
+    this.unitOfWork = unitOfWork;
+  }
+
+  /**
+   * Get user repository
+   */
+  private get userRepo() {
+    return this.unitOfWork.getRepository<User>(TableNames.User);
+  }
+
+  /**
+   * Get user info repository
+   */
+  private get userInfoRepo() {
+    return this.unitOfWork.getRepository<UserInfo>(TableNames.UserInfo);
   }
 
   //#region Login
@@ -30,12 +49,12 @@ export class AuthService {
     this.validateCredentials(loginCredentials);
 
     const [user, userInfo] = await Promise.all([
-      this._repository.User.getByEmail(loginCredentials.Email),
-      this._repository.UserInfo.getByEmail(loginCredentials.Email),
+      this.userRepo.findOneWhere({ Email: loginCredentials.Email }),
+      this.userInfoRepo.findOneWhere({ Email: loginCredentials.Email } as Partial<UserInfo>),
     ]);
 
     if (!user || !userInfo) {
-      throw new NotFoundError("User not found");
+      throw new NotFoundError('User not found');
     }
 
     const isPasswordValid = await Security.comparePassword(
@@ -44,7 +63,7 @@ export class AuthService {
     );
 
     if (!isPasswordValid) {
-      throw new UnAuthorizedError("Invalid email or password.");
+      throw new UnAuthorizedError('Invalid email or password.');
     }
 
     const response = JWT.generateTokenPair({
@@ -53,6 +72,15 @@ export class AuthService {
       Role: user.Role,
       TenantId: user.OrgId,
       InfoId: userInfo?.Uid,
+    });
+
+    // Send login notification email (non-blocking)
+    this.sendLoginNotificationEmail(
+      user.Email,
+      userInfo?.FirstName || 'User'
+    ).catch((error) => {
+      console.error('Failed to send login notification email:', error);
+      // Don't throw - email failure shouldn't block login
     });
 
     return new AuthResult({
@@ -64,32 +92,32 @@ export class AuthService {
 
   //#region Refresh Token
   /**
-   *
-   * @param refreahToken
-   * @returns
+   * Refresh access token using refresh token
    */
-  async refreshToken(refreahToken: string) {
-    if (!refreahToken || !refreahToken?.length) {
-      throw new ValidationError("RefreshToken is required");
+  async refreshToken(refreshToken: string) {
+    if (!refreshToken || !refreshToken?.length) {
+      throw new ValidationError('RefreshToken is required');
     }
 
-    const decodedData = JWT.decode(refreahToken);
+    const decodedData = JWT.decode(refreshToken);
 
     if (!decodedData?.Payload) {
-      throw new ValidationError("Invalid RefreshToken");
+      throw new ValidationError('Invalid RefreshToken');
     }
 
     const [user, userInfo] = await Promise.all([
-      this._repository.User.getById(decodedData.Payload.UserId, [
-        decodedData.Payload.TenantId,
-      ]),
-      this._repository.UserInfo.getById(decodedData.Payload.InfoId, [
-        decodedData.Payload.TenantId,
-      ]),
+      this.userRepo.findById(
+        decodedData.Payload.UserId,
+        decodedData.Payload.TenantId
+      ),
+      this.userInfoRepo.findById(
+        decodedData.Payload.InfoId,
+        decodedData.Payload.TenantId
+      ),
     ]);
 
     if (!user || !userInfo) {
-      throw new ValidationError("User not found");
+      throw new ValidationError('User not found');
     }
 
     const accessToken = JWT.encode({
@@ -102,7 +130,7 @@ export class AuthService {
 
     return new AuthResult({
       AccessToken: accessToken,
-      RefreshToken: refreahToken,
+      RefreshToken: refreshToken,
     });
   }
   //#endregion
@@ -110,19 +138,105 @@ export class AuthService {
   //#region Private Functions
   /**
    * Validates the presence of required login credentials
-   * @param loginCredentials Object containing email and password
-   * @throws ValidationError if email or password is missing
    */
   private validateCredentials(loginCredentials: {
     Email: string;
     Password: string;
   }) {
     if (!loginCredentials?.Email && !loginCredentials?.Email?.length) {
-      throw new ValidationError("Email is required");
+      throw new ValidationError('Email is required');
     }
 
     if (!loginCredentials?.Password && !loginCredentials?.Password?.length) {
-      throw new ValidationError("Password is required");
+      throw new ValidationError('Password is required');
+    }
+  }
+
+  /**
+   * Sends a login notification email to the user
+   */
+  private async sendLoginNotificationEmail(
+    userEmail: string,
+    userName: string
+  ): Promise<void> {
+    try {
+      const emailConfig = new NodemailerConfig({
+        Host: 'smtp.gmail.com',
+        Port: 587,
+        Secure: false,
+        User: 'yashsuthar352@gmail.com',
+        Password: 'ddns dnwa rcry rkxp',
+        From: 'yashsuthar352@gmail.com',
+        FromName: 'Recruitment System',
+      });
+
+      const loginTime = new Date();
+      const formattedDate = loginTime.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+      const formattedTime = loginTime.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      });
+
+      const htmlContent = TemplateHelper.getLoginNotificationTemplate({
+        userName,
+        userEmail,
+        loginDate: formattedDate,
+        loginTime: formattedTime,
+      });
+
+      const textContent = `
+      Login Notification - Recruitment System
+
+      Hello ${userName},
+
+      Your account was successfully accessed.
+
+      Details:
+      - Email: ${userEmail}
+      - Date: ${formattedDate}
+      - Time: ${formattedTime}
+
+      Security Notice: If you did not perform this login, please secure your account immediately.
+
+      Thank you for using our Recruitment System!
+
+      © ${new Date().getFullYear()} Recruitment System. All rights reserved.
+      This is an automated message, please do not reply.
+      `;
+
+      const result = await EmailService.sendSingleEmail(
+        emailConfig,
+        {
+          To: [{ Email: userEmail, Name: userName }],
+          Subject: 'Login Notification - Recruitment System',
+          Html: htmlContent,
+          Text: textContent,
+        },
+        {
+          MaxAttempts: 2,
+          InitialDelayMs: 1000,
+        }
+      );
+
+      if (result.Success) {
+        console.log(
+          `Login notification email sent to ${userEmail} - Message ID: ${result.MessageId}`
+        );
+      } else {
+        console.error(
+          `Failed to send login notification to ${userEmail}:`,
+          result.Error
+        );
+      }
+    } catch (error) {
+      console.error('Error in sendLoginNotificationEmail:', error);
+      throw error;
     }
   }
   //#endregion

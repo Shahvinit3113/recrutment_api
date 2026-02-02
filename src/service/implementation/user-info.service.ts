@@ -1,33 +1,25 @@
-import { UserInfo } from "@/data/entities/user-info";
-import { VmService } from "../vm/vm.service";
-import { Filter } from "@/data/filters/filter";
-import { inject, injectable } from "inversify";
-import { TYPES } from "@/core/container/types";
-import { Repository } from "@/repository/base/repository";
-import { CallerService } from "../caller/caller.service";
-import { Result } from "@/data/response/response";
+import { inject, injectable } from 'inversify';
+import { TYPES } from '@/core/container/types';
+import { UserInfo } from '@/data/entities/user-info';
+import { TableNames } from '@/database/tables';
+import { IUnitOfWork } from '@/repository/interfaces';
+import { CallerService } from '../caller/caller.service';
+import { BaseService } from '../base/base.service';
+import { Result } from '@/data/response/response';
 
 @injectable()
-export class UserInfoService extends VmService<
-  UserInfo,
-  UserInfo,
-  Filter,
-  Result<UserInfo>
-> {
+export class UserInfoService extends BaseService<UserInfo> {
   constructor(
-    @inject(TYPES.Repository) _repository: Repository,
-    @inject(TYPES.Caller) _callerService: CallerService
+    @inject(TYPES.UnitOfWork) unitOfWork: IUnitOfWork,
+    @inject(TYPES.Caller) callerService: CallerService
   ) {
-    super(_repository.UserInfo, _callerService, UserInfo);
+    super(unitOfWork, callerService, TableNames.UserInfo, UserInfo);
   }
 
-  //#region Get
   /**
-   * Get user's details
-   * @returns
+   * Get current user's details
    */
   async getUserDetails(): Promise<Result<UserInfo>> {
     return await this.getByIdAsync(this._callerService.infoId);
   }
-  //#endregion
 }

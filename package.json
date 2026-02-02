@@ -20,7 +20,14 @@
     "lint:fix": "eslint src/**/*.ts --fix",
     "clean": "rm -rf dist",
     "prebuild": "npm run clean",
-    "build": "tsc"
+    "build": "tsc",
+    "db:migrate": "cross-env NODE_ENV=development tsx node_modules/knex/bin/cli.js migrate:latest --knexfile knexfile.ts",
+    "db:migrate:rollback": "cross-env NODE_ENV=development tsx node_modules/knex/bin/cli.js migrate:rollback --knexfile knexfile.ts",
+    "db:migrate:rollback:all": "cross-env NODE_ENV=development tsx node_modules/knex/bin/cli.js migrate:rollback --all --knexfile knexfile.ts",
+    "db:migrate:status": "cross-env NODE_ENV=development tsx node_modules/knex/bin/cli.js migrate:status --knexfile knexfile.ts",
+    "db:migrate:make": "cross-env NODE_ENV=development tsx node_modules/knex/bin/cli.js migrate:make --knexfile knexfile.ts -x ts",
+    "db:seed": "cross-env NODE_ENV=development tsx node_modules/knex/bin/cli.js seed:run --knexfile knexfile.ts",
+    "db:seed:make": "cross-env NODE_ENV=development tsx node_modules/knex/bin/cli.js seed:make --knexfile knexfile.ts -x ts"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
@@ -35,11 +42,14 @@
     "inversify": "^7.7.1",
     "joi": "^17.9.2",
     "jsonwebtoken": "^9.0.2",
+    "knex": "^3.1.0",
     "module-alias": "^2.2.3",
     "multer": "^1.4.5-lts.1",
     "mysql2": "^3.11.4",
+    "nodemailer": "^7.0.12",
     "redis": "^4.6.7",
     "reflect-metadata": "^0.2.2",
+    "resend": "^6.8.0",
     "socket.io": "^4.7.2",
     "winston": "^3.10.0"
   },
@@ -53,6 +63,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/multer": "^1.4.7",
     "@types/node": "^20.19.10",
+    "@types/nodemailer": "^7.0.5",
     "@typescript-eslint/eslint-plugin": "^6.2.0",
     "@typescript-eslint/parser": "^6.2.0",
     "cross-env": "^10.0.0",

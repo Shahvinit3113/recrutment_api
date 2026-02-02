@@ -1,0 +1,16 @@
+export enum FieldType {
+  Text,
+  TextArea,
+  Number,
+  Date,
+  Select,
+  MultiSelect,
+  Radio,
+  Checkbox,
+  Email,
+  Phone,
+  File,
+  Price,
+  Range,
+  Time,
+}

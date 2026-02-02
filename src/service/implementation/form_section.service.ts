@@ -1,23 +1,17 @@
-import { inject, injectable } from "inversify";
-import { VmService } from "../vm/vm.service";
-import { Filter } from "@/data/filters/filter";
-import { Result } from "@/data/response/response";
-import { TYPES } from "@/core/container/types";
-import { Repository } from "@/repository/base/repository";
-import { CallerService } from "../caller/caller.service";
-import { FormSection } from "@/data/entities/form_section";
+import { inject, injectable } from 'inversify';
+import { TYPES } from '@/core/container/types';
+import { FormSection } from '@/data/entities/form_section';
+import { TableNames } from '@/database/tables';
+import { IUnitOfWork } from '@/repository/interfaces';
+import { CallerService } from '../caller/caller.service';
+import { BaseService } from '../base/base.service';
 
-injectable();
-export class FormSectionService extends VmService<
-  FormSection,
-  FormSection,
-  Filter,
-  Result<FormSection>
-> {
+@injectable()
+export class FormSectionService extends BaseService<FormSection> {
   constructor(
-    @inject(TYPES.Repository) repository: Repository,
+    @inject(TYPES.UnitOfWork) unitOfWork: IUnitOfWork,
     @inject(TYPES.Caller) callerService: CallerService
   ) {
-    super(repository.FormSection, callerService, FormSection);
+    super(unitOfWork, callerService, TableNames.FormSection, FormSection);
   }
 }

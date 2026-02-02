@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Welcome</title>
+  </head>
+  <body
+    style="
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+    "
+  >
+    <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff">
+      <!-- Header -->
+      <div
+        style="
+          background-color: #2196f3;
+          color: white;
+          padding: 40px 20px;
+          text-align: center;
+        "
+      >
+        <h1 style="margin: 0; font-size: 32px">🎉 Welcome!</h1>
+      </div>
+
+      <!-- Content -->
+      <div style="padding: 30px 20px">
+        <h2 style="color: #333; margin-top: 0">Hello {{userName}},</h2>
+        <p style="color: #666; font-size: 16px; line-height: 1.8">
+          Welcome to the <strong>Recruitment System</strong>! We're excited to
+          have you on board.
+        </p>
+
+        <!-- Info Card -->
+        <div
+          style="
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 25px 0;
+          "
+        >
+          <h3 style="color: #2196f3; margin-top: 0">Your Account Details</h3>
+          <p style="margin: 10px 0; color: #333">
+            <strong>Email:</strong> {{userEmail}}
+          </p>
+          <p style="margin: 10px 0; color: #333">
+            <strong>Role:</strong> {{userRole}}
+          </p>
+          <p style="margin: 10px 0; color: #333">
+            <strong>Joined:</strong> {{joinDate}}
+          </p>
+        </div>
+
+        <!-- Getting Started -->
+        <div style="margin: 25px 0">
+          <h3 style="color: #333">Getting Started</h3>
+          <ul style="color: #666; font-size: 15px; line-height: 1.8">
+            <li>Complete your profile information</li>
+            <li>Upload your resume and documents</li>
+            <li>Browse available job positions</li>
+            <li>Set up your notification preferences</li>
+          </ul>
+        </div>
+
+        <!-- CTA Button -->
+        <div style="text-align: center; margin: 30px 0">
+          <a
+            href="{{loginUrl}}"
+            style="
+              display: inline-block;
+              background-color: #2196f3;
+              color: white;
+              padding: 14px 30px;
+              text-decoration: none;
+              border-radius: 5px;
+              font-weight: bold;
+              font-size: 16px;
+            "
+          >
+            Get Started
+          </a>
+        </div>
+
+        <p
+          style="
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-top: 30px;
+          "
+        >
+          If you have any questions, feel free to reach out to our support team.
+        </p>
+      </div>
+
+      <!-- Footer -->
+      <div
+        style="
+          background-color: #333;
+          color: #999;
+          padding: 20px;
+          text-align: center;
+          font-size: 12px;
+        "
+      >
+        <p style="margin: 0 0 5px 0">
+          © {{year}} Recruitment System. All rights reserved.
+        </p>
+        <p style="margin: 0">
+          This is an automated message, please do not reply.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>
