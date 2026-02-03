@@ -1,7 +1,7 @@
 import { BaseEntities } from "./base-entities";
 
 export class Application extends BaseEntities {
-  Name: string = "";
+  FullName: string = "";
   Email: string = "";
   Phone: string = "";
   Experience: string = "";
