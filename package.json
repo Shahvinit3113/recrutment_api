@@ -4,7 +4,7 @@
   "description": "Recruitment API with Node.js and TypeScript",
   "main": "dist/app.js",
   "scripts": {
-    "dev": "cross-env NODE_ENV=development tsx -r tsconfig-paths/register src/app.ts",
+    "dev": "cross-env NODE_ENV=development nodemon --exec tsx -r tsconfig-paths/register src/app.ts",
     "dev:staging": "cross-env NODE_ENV=staging tsx -r tsconfig-paths/register src/app.ts",
     "dev:production": "cross-env NODE_ENV=production tsx -r tsconfig-paths/register src/app.ts",
     "start": "cross-env NODE_ENV=production node -r tsconfig-paths/register dist/app.js",
