@@ -8,11 +8,12 @@ import { Filter } from '@/data/filters/filter';
 import { controller } from '@/core/decorators/controller.decorator';
 import { authenticate } from '@/middleware/implementation/auth';
 import { initializeCaller } from '@/middleware/implementation/callerInit';
+import { OptionGroupVm } from '@/data/models/OptionGroupVm';
 
 @injectable()
 @controller('/option-group', [initializeCaller, authenticate])
 export class OptionGroupController extends BaseController<
-  OptionGroup,
+  OptionGroupVm,
   OptionGroup,
   Filter,
   Result<OptionGroup>

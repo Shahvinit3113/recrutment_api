@@ -12,6 +12,9 @@ import { FormTemplateController } from "./implementation/form_template.controlle
 import { FormSectionController } from "./implementation/form_section.controller";
 import { FormFieldController } from "./implementation/form_field.controller";
 import { ApplicationController } from "./implementation/application.controller";
+import { OptionGroupController } from "./implementation/option_group.controller";
+import { OptionsController } from "./implementation/options.controller";
+import { EmailTemplateController } from "./implementation/email_template.controller";
 
 export function initiControllersRoutes() {
   const router = Router();
@@ -29,6 +32,9 @@ export function initiControllersRoutes() {
       FormSectionController,
       FormFieldController,
       ApplicationController,
+      OptionGroupController,
+      OptionsController,
+      EmailTemplateController
     ],
     container
   );
